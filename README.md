@@ -1,6 +1,10 @@
 # MadKV
 
-This is a distributed key-value (KV) store project template for the Distributed Systems course (CS 739) at the University of Wisconsin--Madison. Through a few steps over the semester, students will build MadKV, a replicated, consensus-backed, fault-tolerant, and optionally partitioned key-value store system with good performance.
+![top-lang](https://img.shields.io/github/languages/top/josehu07/madkv?color=darkorange)
+![code-size](https://img.shields.io/github/languages/code-size/josehu07/madkv?color=steelblue)
+![license](https://img.shields.io/github/license/josehu07/madkv?color=green)
+
+This is the distributed key-value (KV) store project template for the Distributed Systems course (CS 739) at the University of Wisconsin--Madison. Through a few steps over the semester, students will build MadKV, a replicated, consensus-backed, fault-tolerant, and optionally partitioned key-value store system with good performance.
 
 To get started, clone the repo to your development machine:
 
@@ -44,9 +48,9 @@ The codebase contains the following essential files:
 * `justmods/`: project-specific Justfiles to be included as modules
 * `refcli/`: a dummy client that demonstrates the stdin/out workloads interface
 * `runner/`: a multi-functional KV testing & benchmarking utility
-* `src/` or any other name to your liking: source code of your KV store server and client
+* `src/` or any other directory name to your liking: source code of your KV store server and client
 
-Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language or their choice, and add proper invocation commands to project-specific Justfiles.
+Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language of their choice, and add proper invocation commands to project-specific Justfiles for automation.
 
 ## Usage
 

@@ -4,7 +4,7 @@ default:
 
 # list all files as a tree
 tree:
-    tree . --filelimit 25
+    tree . --filelimit 20 -I '.git|debug|target|ycsb'
 
 # sync repo to a remote (experimental)
 rsync remote:
@@ -15,6 +15,7 @@ rsync remote:
         --exclude "*/__pycache__/" \
         --exclude "*/debug/" \
         --exclude "*/target/" \
+        --exclude "ycsb/" \
         . "{{remote}}:~/madkv"
 
 # common utils recipes
