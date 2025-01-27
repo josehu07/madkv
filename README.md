@@ -8,12 +8,13 @@ To get started, clone the repo to your development machine:
 git clone https://github.com/josehu07/madkv.git
 ```
 
-The codebase template is subject to updates between project releases. Pull updates and check out to a development branch before working on a new project.
+The codebase template is subject to updates between project releases. Pull and merge updates into your development branch before working on a new project.
 
 ```bash
 git checkout main
 git pull
-git checkout proj<x>
+git checkout proj
+git merge main
 ```
 
 ## Prerequisites
@@ -45,13 +46,13 @@ The codebase contains the following essential files:
 * `runner/`: a multi-functional KV testing & benchmarking utility
 * `src/` or any other name to your liking: source code of your KV store server and client
 
-Students should
+Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language or their choice, and add proper invocation commands to project-specific Justfiles.
 
 ## Usage
 
-All actions relevant to grading should be made invocable through [`just`](https://github.com/casey/just) recipes. Students need to fill out some of the recipes in the project-level `Justfile`s (e.g., ``) to surface their own KV store system code.
+The following are common `just` recipes (subject to updates).
 
-List `just` recipes:
+List `just` recipes (of a module):
 
 ```bash
 just [module]
@@ -63,7 +64,29 @@ List all files in the codebase as a tree:
 just tree
 ```
 
-TODO
+Build the provided utilities:
+
+```bash
+just utils::build
+```
+
+Fetch the YCSB benchmark to `ycsb/`:
+
+```bash
+just utils::ycsb
+```
+
+All actions relevant to grading should be made invocable through [`just`](https://github.com/casey/just) recipes. Students need to fill out some of the recipes in the project-level `Justfile`s (e.g., `justmods/proj1.just`) to surface their own KV store system code.
+
+## Project-Specific Instructions
+
+For each project, fill the blanks in `justmods/proj<x>.just` with proper commands to invoke your KV server and client executables. Then, follow the Canvas spec and complete the required tasks.
+
+### Project 1
+
+The following commands are useful for project 1.
+
+TBA (we are working on the runner utility for project 1, will be announced soon)
 
 ---
 
