@@ -1,0 +1,9 @@
+[package]
+name = "refcli"
+description = "Reference client that demonstrates the stdin/out interface"
+version = "0.1.0"
+edition = "2021"
+authors = ["Guanzhou Hu <me@josehu.com>"]
+
+[dependencies]
+rand = { workspace = true }

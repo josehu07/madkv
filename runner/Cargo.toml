@@ -1,0 +1,9 @@
+[package]
+name = "runner"
+description = "Driver of the key-value store with automated workloads"
+version = "0.1.0"
+edition = "2021"
+authors = ["Guanzhou Hu <me@josehu.com>"]
+
+[dependencies]
+rand = { workspace = true }

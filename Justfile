@@ -17,8 +17,8 @@ rsync remote:
         --exclude "*/target/" \
         . "{{remote}}:~/madkv"
 
-# common recipes
-mod common 'justmods/common.just'
+# common utils recipes
+mod utils 'justmods/utils.just'
 
 # project 1 recipes
 mod p1 'justmods/proj1.just'
