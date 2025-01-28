@@ -4,10 +4,6 @@ set working-directory := '..'
 default:
     @just --list p1 --unsorted
 
-# ensure a subdir under 'tmp/' exists
-tmpdir subdir:
-    mkdir -p "/tmp/madkv-p1/{{subdir}}"
-
 # build your executables in release mode
 build:
     # FIXME: your build commands here
@@ -20,43 +16,65 @@ server listen="0.0.0.0:3777":
 client server="127.0.0.1:3777":
     # FIXME: your client run command here, connecting to server at addr
 
-# run your KV store testcase client 1
+# run your KV store testcase 1 client
 test1 server="127.0.0.1:3777":
-    # FIXME: your testcase client 1 run command here
+    # FIXME: your testcase 1 client run command here
     #        for testcases, feel free to reuse 'just p1::client' if you
     #        designed your clients this way, or invoke different executables
 
-# run your KV store testcase client 2
+# run your KV store testcase 2 client
 test2 server="127.0.0.1:3777":
-    # FIXME: your testcase client 2 run command here
+    # FIXME: your testcase 2 client run command here
 
-# run your KV store testcase client 3
+# run your KV store testcase 3 client
 test3 server="127.0.0.1:3777":
-    # FIXME: your testcase client 3 run command here
+    # FIXME: your testcase 3 client run command here
 
-# run your KV store testcase client 4
+# run your KV store testcase 4 client(s)
 test4 server="127.0.0.1:3777":
-    # FIXME: your testcase client 4 run command here
+    # FIXME: your testcase 4 client(s) run commands here
+    #        for multi-client testcases, this recipe should run multiple
+    #        concurrent client processes; you may write an additional runner
+    #        utility or a scripting layer to manage multiple processes
 
-# run your KV store testcase client 5
+# run your KV store testcase 5 client(s)
 test5 server="127.0.0.1:3777":
-    # FIXME: your testcase client 5 run command here
+    # FIXME: your testcase 5 client(s) run commands here
 
 # kill all processes of your KV store system
 kill:
     # FIXME: your kill commands here
+    #        make sure that it kills all server, clients, and any extra helper
+    #        processes of your system
 
 # NOTE: feel free to add more recipes as you see fit...
 #       also feel free to add extra parameters to the recipes as you see fit,
 #       but don't change the existing parameters
 
-# run fuzz testing (wip)
-fuzz server="127.0.0.1:3777": (tmpdir "fuzz")
-    # TODO: to be announced
+# ensure a subdir under 'tmp/' exists
+tmpdir subdir:
+    mkdir -p "/tmp/madkv-p1/{{subdir}}"
 
-# run YCSB benchmarking (wip)
-bench server="127.0.0.1:3777": (tmpdir "bench")
+# run a student-provided testcase (wip)
+testcase num server="127.0.0.1:3777": (tmpdir "tests")
+    just p1::build
     # TODO: to be announced
+    just p1::kill
+
+# run a fuzz testing scenario (wip)
+fuzz scene server="127.0.0.1:3777": (tmpdir "fuzz")
+    just p1::build
+    just utils::build
+    # TODO: to be announced
+    just p1::kill
+
+# run a YCSB benchmark workload (wip)
+bench wload nclis server="127.0.0.1:3777": (tmpdir "bench")
+    just p1::build
+    just utils::build
+    just utils::ycsb
+    # TODO: to be announced
+    just p1::kill
 
 # generate .md report template from existing results (wip)
 report:
