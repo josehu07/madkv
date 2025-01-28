@@ -1,8 +1,11 @@
 //! Driver library that runs a key-value client with automated workloads.
 
 // TODO:
+//   process runner
 //   stdin/out driver
 //   fuzz tester
 //   ycsb benchmarker
-//   web frontend
 //   report generator
+//   web frontend
+
+use duct::cmd;

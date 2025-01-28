@@ -45,12 +45,12 @@ Install the following dependencies on all machines (instructions are for CloudLa
 The codebase contains the following essential files:
 
 * `Justfile`: the top-level Justfile, entrance to `just` invocations
-* `justmods/`: project-specific Justfiles to be included as modules
+* `justmod/`: project-specific Justfiles to be included as modules
 * `refcli/`: a dummy client that demonstrates the stdin/out workloads interface
 * `runner/`: a multi-functional KV testing & benchmarking utility
 * `src/` or any other directory name to your liking: source code of your KV store server and client
 
-Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language of their choice, and add proper invocation commands to project-specific Justfiles for automation.
+Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language of their choice, and add proper invocation commands to project-specific Justfiles for automation. We recommend students get familiar with the basics of the [`just`](https://github.com/casey/just) tool.
 
 ## Usage
 
@@ -80,15 +80,15 @@ Fetch the YCSB benchmark to `ycsb/`:
 just utils::ycsb
 ```
 
-All actions relevant to grading should be made invocable through [`just`](https://github.com/casey/just) recipes. Students need to fill out some of the recipes in the project-level `Justfile`s (e.g., `justmods/proj1.just`) to surface their own KV store system code.
+All actions relevant to grading should be made invocable through `just` recipes. Students need to fill out some of the recipes in the project-level `Justfile`s (e.g., `justmod/proj1.just`) to surface their own KV store system code.
 
 ## Project-Specific Instructions
 
-For each project, fill the blanks in `justmods/proj<x>.just` with proper commands to invoke your KV server and client executables. Then, follow the Canvas spec and complete the required tasks.
+For each project, fill the blanks in `justmod/proj<x>.just` with proper commands to invoke your KV server and client executables. Then, follow the Canvas spec and complete the required tasks.
 
 ### Project 1
 
-The following commands are useful for project 1.
+The following recipes should be ready for project 1.
 
 TBA (we are working on the runner utility for project 1, will be announced soon)
 

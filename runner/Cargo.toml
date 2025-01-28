@@ -7,3 +7,4 @@ authors = ["Guanzhou Hu <me@josehu.com>"]
 
 [dependencies]
 rand = { workspace = true }
+duct = "0.13"

@@ -165,9 +165,10 @@ fn write_response(resp: KvResp, stdout: &mut io::StdoutLock) -> Result<(), io::E
 fn main() -> Result<(), Box<dyn Error>> {
     let mut stdin_handle = io::stdin().lock();
     let mut stdout_handle = io::stdout().lock();
-
-    let mut state = BTreeMap::new();
     let mut buffer = String::new();
+
+    // a fake, non-server-side sorted map
+    let mut state = BTreeMap::new();
 
     loop {
         buffer.clear();

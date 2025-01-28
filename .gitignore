@@ -26,5 +26,6 @@ target/
 # Mac DS_Store
 .DS_Store
 
-# YCSB
+# Project-specific
 ycsb/
+report/

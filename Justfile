@@ -1,10 +1,10 @@
 # list top-level just recipes
 default:
-    @just --list
+    @just --list --unsorted
 
 # list all files as a tree
 tree:
-    tree . --filelimit 20 -I '.git|debug|target|ycsb'
+    tree . -I '.git|debug|target|ycsb'
 
 # sync repo to a remote (experimental)
 rsync remote:
@@ -19,7 +19,7 @@ rsync remote:
         . "{{remote}}:~/madkv"
 
 # common utils recipes
-mod utils 'justmods/utils.just'
+mod utils 'justmod/utils.just'
 
 # project 1 recipes
-mod p1 'justmods/proj1.just'
+mod p1 'justmod/proj1.just'

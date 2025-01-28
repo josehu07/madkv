@@ -2,7 +2,7 @@ set working-directory := '..'
 
 # list utils just recipes
 default:
-    @just --list utils
+    @just --list utils --unsorted
 
 # build provided utilities (mode dev|rel)
 build mode="rel":
