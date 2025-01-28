@@ -5,7 +5,7 @@ use std::error::Error;
 use std::io::{self, BufRead, Write};
 use std::str::SplitWhitespace;
 
-/// KV Operation call type.
+/// KV operation call type.
 enum KvCall {
     Put { key: String, value: String },
     Swap { key: String, value: String },
