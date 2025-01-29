@@ -52,7 +52,9 @@ The codebase contains the following essential files:
 
 Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language of their choice, and add proper invocation commands to project-specific Justfiles for automation. We recommend students get familiar with the basics of the [`just`](https://github.com/casey/just) tool.
 
-## Usage
+See the course Canvas specs for details about the KV store project and the tasks to complete.
+
+## Just Recipes
 
 The following are common `just` recipes (subject to updates).
 
@@ -82,15 +84,46 @@ just utils::ycsb
 
 All actions relevant to grading should be made invocable through `just` recipes. Students need to fill out some of the recipes in the project-level `Justfile`s (e.g., `justmod/proj1.just`) to surface their own KV store system code.
 
-## Project-Specific Instructions
-
-For each project, fill the blanks in `justmod/proj<x>.just` with proper commands to invoke your KV server and client executables. Then, follow the Canvas spec and complete the required tasks.
+For each project, fill in the blanks of `justmod/proj<x>.just` with proper commands to invoke your KV server and client executables. Then, follow the Canvas project spec and complete the required tasks.
 
 ### Project 1
 
 The following recipes should be ready for project 1.
 
-TBA (we are working on the runner utility for project 1, will be announced soon)
+> TBA (We are working on the runner utility for project 1; it will be announced soon. In the meantime, you may start working on your KV system code.)
+
+## Client Automation Interface
+
+As described in the Canvas project specs, the KV client should by default support a stdin/out-based workload interface for automation. The interface is formatted as the following (but subject to updates).
+
+The client in this mode should block on reading stdin line by line, interpreting each line as a synchronous key-value API call. The input lines have the following format:
+
+```text
+PUT <key> <value>
+SWAP <key> <value>
+GET <key>
+DELETE <key>
+SCAN <key123> <key456>
+STOP  # stop reading stdin, exit
+```
+
+After the completion of an API call, the client should print to stdout a line (ending with a newline) that presents the result of this call. The output lines should have the following format:
+
+```text
+PUT <key> found
+PUT <key> not_found
+SWAP <key> <old_value>
+SWAP <key> null  # if not found
+GET <key> <value>
+GET <key> null   # if not found
+DELETE <key> found
+DELETE <key> not_found
+SCAN <key123> <key456> BEGIN
+  <key127> <valuea>
+  <key299> <valueb>
+  <key456> <valuec>
+SCAN END
+```
 
 ---
 

@@ -38,78 +38,91 @@ enum KvResp {
         key: String,
         found: bool,
     },
+    Stop,
 }
 
 /// Get the next segment from an input line iterator.
-fn expect_next_seg(segs: &mut SplitWhitespace) -> Result<String, io::Error> {
+fn expect_next_seg(segs: &mut SplitWhitespace, line: &str) -> Result<String, io::Error> {
     segs.next().map(|s| s.into()).ok_or(io::Error::new(
         io::ErrorKind::InvalidInput,
-        "invalid input line",
+        format!("invalid input line: {}", line),
     ))
 }
 
 /// Parse an input line into a KV operation call.
 fn parse_input_call(line: &str) -> Result<KvCall, io::Error> {
     let mut segs = line.split_whitespace();
+
     match segs.next() {
         Some("PUT") => Ok(KvCall::Put {
-            key: expect_next_seg(&mut segs)?,
-            value: expect_next_seg(&mut segs)?,
+            key: expect_next_seg(&mut segs, line)?,
+            value: expect_next_seg(&mut segs, line)?,
         }),
+
         Some("SWAP") => Ok(KvCall::Swap {
-            key: expect_next_seg(&mut segs)?,
-            value: expect_next_seg(&mut segs)?,
+            key: expect_next_seg(&mut segs, line)?,
+            value: expect_next_seg(&mut segs, line)?,
         }),
+
         Some("GET") => Ok(KvCall::Get {
-            key: expect_next_seg(&mut segs)?,
+            key: expect_next_seg(&mut segs, line)?,
         }),
+
         Some("SCAN") => Ok(KvCall::Scan {
-            key_start: expect_next_seg(&mut segs)?,
-            key_end: expect_next_seg(&mut segs)?,
+            key_start: expect_next_seg(&mut segs, line)?,
+            key_end: expect_next_seg(&mut segs, line)?,
         }),
+
         Some("DELETE") => Ok(KvCall::Delete {
-            key: expect_next_seg(&mut segs)?,
+            key: expect_next_seg(&mut segs, line)?,
         }),
+
         Some("STOP") => Ok(KvCall::Stop),
+
         _ => Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "invalid input line",
+            format!("invalid input line: {}", line),
         )),
     }
 }
 
 /// Handle a call (dummy logic).
-fn handle_kv_call(call: KvCall, state: &mut BTreeMap<String, String>) -> Option<KvResp> {
+fn handle_kv_call(call: KvCall, state: &mut BTreeMap<String, String>) -> KvResp {
     match call {
         KvCall::Put { key, value } => {
             let found = state.contains_key(&key);
             state.insert(key.clone(), value);
-            Some(KvResp::Put { key, found })
+            KvResp::Put { key, found }
         }
+
         KvCall::Swap { key, value } => {
             let old_value = state.insert(key.clone(), value);
-            Some(KvResp::Swap { key, old_value })
+            KvResp::Swap { key, old_value }
         }
+
         KvCall::Get { key } => {
             let value = state.get(&key).cloned();
-            Some(KvResp::Get { key, value })
+            KvResp::Get { key, value }
         }
+
         KvCall::Scan { key_start, key_end } => {
             let entries = state
                 .range(key_start.clone()..key_end.clone())
                 .map(|(k, v)| (k.clone(), v.clone()))
                 .collect();
-            Some(KvResp::Scan {
+            KvResp::Scan {
                 key_start,
                 key_end,
                 entries,
-            })
+            }
         }
+
         KvCall::Delete { key } => {
             let found = state.remove(&key).is_some();
-            Some(KvResp::Delete { key, found })
+            KvResp::Delete { key, found }
         }
-        KvCall::Stop => None,
+
+        KvCall::Stop => KvResp::Stop,
     }
 }
 
@@ -122,6 +135,7 @@ fn write_response(resp: KvResp, stdout: &mut io::StdoutLock) -> Result<(), io::E
             key,
             if found { "found" } else { "not_found" }
         ),
+
         KvResp::Swap { key, old_value } => writeln!(
             stdout,
             "SWAP {} {}",
@@ -132,6 +146,7 @@ fn write_response(resp: KvResp, stdout: &mut io::StdoutLock) -> Result<(), io::E
                 "null".into()
             }
         ),
+
         KvResp::Get { key, value } => writeln!(
             stdout,
             "GET {} {}",
@@ -142,6 +157,7 @@ fn write_response(resp: KvResp, stdout: &mut io::StdoutLock) -> Result<(), io::E
                 "null".into()
             }
         ),
+
         KvResp::Scan {
             key_start,
             key_end,
@@ -153,12 +169,15 @@ fn write_response(resp: KvResp, stdout: &mut io::StdoutLock) -> Result<(), io::E
             }
             writeln!(stdout, "SCAN END")
         }
+
         KvResp::Delete { key, found } => writeln!(
             stdout,
             "DELETE {} {}",
             key,
             if found { "found" } else { "not_found" }
         ),
+
+        KvResp::Stop => writeln!(stdout, "STOP"),
     }
 }
 
@@ -173,13 +192,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     loop {
         buffer.clear();
         stdin_handle.read_line(&mut buffer)?;
-
         let call = parse_input_call(buffer.trim())?;
+
         let resp = handle_kv_call(call, &mut state);
 
-        if let Some(resp) = resp {
-            write_response(resp, &mut stdout_handle)?;
-        } else {
+        let to_stop = matches!(resp, KvResp::Stop);
+        write_response(resp, &mut stdout_handle)?;
+        if to_stop {
             break;
         }
     }
