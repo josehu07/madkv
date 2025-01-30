@@ -128,3 +128,5 @@ SCAN END
 ---
 
 Authored by Guanzhou Hu. First offered in CS 739 Spring 2025 taught by Prof. Andrea Arpaci-Dusseau.
+
+DO NOT FORK PUBLICLY OR PUBLISH SOLUTIONS ONLINE.

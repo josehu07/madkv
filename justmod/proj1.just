@@ -57,22 +57,16 @@ tmpdir subdir:
 
 # run a student-provided testcase (wip)
 testcase num server="127.0.0.1:3777": (tmpdir "tests")
-    just p1::build
-    # TODO: to be announced
+    just "p1::test{{num}}" > "/tmp/madkv-p1/tests/test{{num}}.log"
     just p1::kill
 
 # run a fuzz testing scenario (wip)
-fuzz scene server="127.0.0.1:3777": (tmpdir "fuzz")
-    just p1::build
-    just utils::build
+fuzz nclis conflict server="127.0.0.1:3777": (tmpdir "fuzz")
     # TODO: to be announced
     just p1::kill
 
 # run a YCSB benchmark workload (wip)
-bench wload nclis server="127.0.0.1:3777": (tmpdir "bench")
-    just p1::build
-    just utils::build
-    just utils::ycsb
+bench nclis wload server="127.0.0.1:3777": (tmpdir "bench")
     # TODO: to be announced
     just p1::kill
 

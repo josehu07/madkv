@@ -38,7 +38,7 @@ impl ServerProc {
 #[derive(Debug)]
 pub struct ClientProc {
     handle: Child,
-    driver: JoinHandle<Result<(), RunnerError>>,
+    _driver: JoinHandle<Result<(), RunnerError>>,
     call_tx: mpsc::Sender<KvCall>,
     resp_rx: mpsc::Receiver<KvResp>,
 }
@@ -83,7 +83,7 @@ impl ClientProc {
 
         Ok(ClientProc {
             handle,
-            driver,
+            _driver: driver,
             call_tx,
             resp_rx,
         })

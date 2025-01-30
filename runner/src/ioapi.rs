@@ -69,7 +69,7 @@ impl KvResp {
 
     /// Return an iterator over a line's whitespace-delimited segments.
     fn get_segs_of_line(buffer: &str) -> SplitWhitespace {
-        buffer.trim().split_whitespace()
+        buffer.split_whitespace()
     }
 
     /// Expect the next segment from an iterator of segments, returning an
