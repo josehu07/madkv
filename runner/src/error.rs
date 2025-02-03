@@ -49,3 +49,9 @@ impl From<mpsc::RecvError> for RunnerError {
         RunnerError::Chan(err.to_string())
     }
 }
+
+impl From<mpsc::RecvTimeoutError> for RunnerError {
+    fn from(err: mpsc::RecvTimeoutError) -> RunnerError {
+        RunnerError::Chan(err.to_string())
+    }
+}

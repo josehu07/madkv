@@ -191,9 +191,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     loop {
         buffer.clear();
-        stdin_handle.read_line(&mut buffer)?;
-        let call = parse_input_call(buffer.trim())?;
+        loop {
+            stdin_handle.read_line(&mut buffer)?;
+            // skip empty lines
+            if !buffer.trim().is_empty() {
+                break;
+            }
+        }
 
+        let call = parse_input_call(buffer.trim())?;
         let resp = handle_kv_call(call, &mut state);
 
         let to_stop = matches!(resp, KvResp::Stop);

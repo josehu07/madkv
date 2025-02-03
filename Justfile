@@ -12,9 +12,9 @@ rsync remote:
         --exclude .git/ \
         --exclude .DS_Store \
         --exclude .vscode/ \
-        --exclude "*/__pycache__/" \
-        --exclude "*/debug/" \
-        --exclude "*/target/" \
+        --exclude "scripts/__pycache__/" \
+        --exclude "debug/" \
+        --exclude "target/" \
         --exclude "ycsb/" \
         . "{{remote}}:~/madkv"
 

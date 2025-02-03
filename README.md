@@ -50,7 +50,7 @@ The codebase contains the following essential files:
 * `runner/`: a multi-functional KV testing & benchmarking utility
 * `src/` or any other directory name to your liking: source code of your KV store server and client
 
-Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language of their choice, and add proper invocation commands to project-specific Justfiles for automation. We recommend students get familiar with the basics of the [`just`](https://github.com/casey/just) tool.
+Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language of their choice, and add proper invocation commands to project-specific Justfiles for automation. We recommend students get familiar with the basics of the [`just` tool](https://github.com/casey/just).
 
 See the course Canvas specs for details about the KV store project and the tasks to complete.
 
@@ -76,6 +76,12 @@ Build the provided utilities:
 just utils::build
 ```
 
+Clean the build of provided utilities:
+
+```bash
+just utils::clean
+```
+
 Fetch the YCSB benchmark to `ycsb/`:
 
 ```bash
@@ -88,15 +94,76 @@ For each project, fill in the blanks of `justmod/proj<x>.just` with proper comma
 
 ### Project 1
 
-The following recipes should be ready for project 1.
+<details>
+<summary>The following recipes should be ready for project 1...</summary>
 
-> TBA (We are working on the runner utility for project 1; it will be announced soon. In the meantime, you may start working on your KV system code.)
+Install extra dependencies of your KV system code:
+
+```bash
+just p1::deps
+```
+
+Build or clean your KV store executables:
+
+```bash
+just p1::build
+```
+
+Launch the KV store server process, listening on address:
+
+```bash
+just p1::server <listen_addr>
+```
+
+Run a KV store client process in stdin/out workload automation mode, connecting to server at address:
+
+```bash
+just p1::client <server_addr>
+```
+
+Run a student-provided testcase demonstration client:
+
+```bash
+just p1::test<n> <server_addr>
+```
+
+Kill all processes relevant to your KV store system:
+
+```bash
+just p1::kill
+```
+
+Once these recipes are correctly supplied, the following higher-level recipes will be runnable.
+
+Launch the long-running KV store server:
+
+```bash
+just p1::service <listen_addr>
+```
+
+Run a student-provided testcase and record outputs to `/tmp/madkv-p1/tests/`:
+
+```bash
+just p1::testcase <num> <server_addr>
+```
+
+Run fuzz testing with given configuration and record outputs to `/tmp/madkv-p1/fuzz/`:
+
+```bash
+just p1::fuzz <num_clients> <conflict ("yes" or "no")> <server_addr>
+```
+
+> TBA (We are still working on the YCSB benchmarking and report generation utility for project 1; it will be announced soon. In the meantime, you may start working on your KV system code and try fuzz testing.)
+</details>
 
 ## Client Automation Interface
 
 As described in the Canvas project specs, the KV client should by default support a stdin/out-based workload interface for automation. The interface is formatted as the following (but subject to updates).
 
-The client in this mode should block on reading stdin line by line, interpreting each line as a synchronous key-value API call. The input lines have the following format:
+The client in this mode should block on reading stdin line by line, interpreting each line as a synchronous key-value API call.
+
+<details>
+<summary>The input lines have the following format...</summary>
 
 ```text
 PUT <key> <value>
@@ -107,7 +174,12 @@ SCAN <key123> <key456>
 STOP  # stop reading stdin, exit
 ```
 
-After the completion of an API call, the client should print to stdout a line (ending with a newline) that presents the result of this call. The output lines should have the following format:
+</details>
+
+After the completion of an API call, the client should print to stdout a line (ending with a newline) that presents the result of this call.
+
+<details>
+<summary>The output lines should have the following format...</summary>
 
 ```text
 PUT <key> found
@@ -123,10 +195,17 @@ SCAN <key123> <key456> BEGIN
   <key299> <valueb>
   <key456> <valuec>
 SCAN END
+STOP  # confirm STOP before exit
 ```
+
+</details>
+
+Assume all keys and values are ASCII alphanumeric, case-sensitive strings. All keywords are also case-sensitive.
 
 ---
 
-Authored by Guanzhou Hu. First offered in CS 739 Spring 2025 taught by Prof. Andrea Arpaci-Dusseau.
+**PLEASE DO NOT FORK PUBLICLY OR PUBLISH SOLUTIONS ONLINE.**
 
-DO NOT FORK PUBLICLY OR PUBLISH SOLUTIONS ONLINE.
+Authored by [Guanzhou Hu](https://josehu.com). First offered in CS 739 Spring 2025 taught by [Prof. Andrea Arpaci-Dusseau](https://pages.cs.wisc.edu/~dusseau/).
+
+If you find replicated distributed systems interesting, take a look at [Summerset](https://github.com/josehu07/summerset) and [Linearize](https://github.com/josehu07/linearize) :-)

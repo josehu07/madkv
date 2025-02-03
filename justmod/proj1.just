@@ -4,9 +4,17 @@ set working-directory := '..'
 default:
     @just --list p1 --unsorted
 
+# install extra dependencies of your KV code
+deps:
+    # FIXME: your dependency installation commands here
+
 # build your executables in release mode
 build:
-    # FIXME: your build commands here
+    # FIXME: your build commands here (don't include clean)
+
+# clean the build of your executables
+clean:
+    # FIXME: your clean commands here
 
 # run your KV store server
 server listen="0.0.0.0:3777":
@@ -45,28 +53,50 @@ test5 server="127.0.0.1:3777":
 kill:
     # FIXME: your kill commands here
     #        make sure that it kills all server, clients, and any extra helper
-    #        processes of your system
+    #        processes of your system; redirecting both out & err to /dev/null
+    #        is recommended
+    #   TIP: commands such as 'pkill' may return non-zero exit code on success,
+    #        which would by default abort the 'just' recipe early; prepend the
+    #        command with a '-' sign to ignore its exit code
 
 # NOTE: feel free to add more recipes as you see fit...
 #       also feel free to add extra parameters to the recipes as you see fit,
 #       but don't change the existing parameters
 
+# launch a long-running KV store service
+service listen="0.0.0.0:3777":
+    just p1::build
+    just utils::build
+    cargo run -p runner --bin service -- \
+        --just-args p1::server "{{listen}}"
+
 # ensure a subdir under 'tmp/' exists
 tmpdir subdir:
     mkdir -p "/tmp/madkv-p1/{{subdir}}"
 
-# run a student-provided testcase (wip)
+# run a student-provided testcase
 testcase num server="127.0.0.1:3777": (tmpdir "tests")
-    just "p1::test{{num}}" > "/tmp/madkv-p1/tests/test{{num}}.log"
+    just p1::build
+    just "p1::test{{num}}" "{{server}}" \
+        | tee "/tmp/madkv-p1/tests/test{{num}}.log"
     just p1::kill
 
-# run a fuzz testing scenario (wip)
-fuzz nclis conflict server="127.0.0.1:3777": (tmpdir "fuzz")
-    # TODO: to be announced
+# run a fuzz testing scenario
+fuzz nclis conflict="no" server="127.0.0.1:3777": (tmpdir "fuzz")
+    just p1::build
+    just utils::build
+    cargo run -p runner -r --bin fuzzer -- \
+        --num-clis "{{nclis}}" \
+        {{ if conflict == "no" { "" } else { "--conflict" } }} \
+        --just-args p1::client "{{server}}" \
+        | tee "/tmp/madkv-p1/fuzz/fuzz-{{nclis}}-{{conflict}}.log"
     just p1::kill
 
-# run a YCSB benchmark workload (wip)
+# run a YCSB benchmark workload
 bench nclis wload server="127.0.0.1:3777": (tmpdir "bench")
+    just p1::build
+    just utils::build
+    just utils::ycsb
     # TODO: to be announced
     just p1::kill
 

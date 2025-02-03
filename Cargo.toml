@@ -3,4 +3,4 @@ members = ["refcli", "runner"]
 resolver = "2"
 
 [workspace.dependencies]
-rand = "0.8"
+rand = "0.9"

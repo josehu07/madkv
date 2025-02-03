@@ -5,6 +5,7 @@ use std::io::BufReader;
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
+use std::time::Duration;
 
 use crate::{KvCall, KvResp, RunnerError};
 
@@ -27,6 +28,20 @@ impl ServerProc {
         Ok(ServerProc { handle })
     }
 
+    /// Wait for the server process to exit (usually only happens on errors),
+    /// returning `Ok` only upon successful termination.
+    pub fn wait(mut self) -> Result<(), RunnerError> {
+        let status = self.handle.wait()?;
+        if status.success() {
+            Ok(())
+        } else {
+            Err(RunnerError::Io(format!(
+                "server exited with status: {}",
+                status
+            )))
+        }
+    }
+
     /// Kill the server process, consuming self.
     pub fn stop(mut self) -> Result<(), RunnerError> {
         self.handle.kill()?;
@@ -38,28 +53,58 @@ impl ServerProc {
 #[derive(Debug)]
 pub struct ClientProc {
     handle: Child,
-    _driver: JoinHandle<Result<(), RunnerError>>,
+    _driver: JoinHandle<()>,
     call_tx: mpsc::Sender<KvCall>,
     resp_rx: mpsc::Receiver<KvResp>,
 }
 
 impl ClientProc {
+    /// One iteration of the driver thread loop.
+    fn driver_iter(
+        stdin: &mut ChildStdin,
+        stdout: &mut BufReader<ChildStdout>,
+        call_rx: &mpsc::Receiver<KvCall>,
+        resp_tx: &mpsc::Sender<KvResp>,
+        line: &mut String,
+        stopped: &mut bool,
+    ) -> Result<(), RunnerError> {
+        let call = call_rx.recv()?;
+        if let KvCall::Stop = call {
+            *stopped = true;
+        }
+        call.into_write(stdin)?;
+
+        let resp = KvResp::from_read(stdout, line)?;
+        resp_tx.send(resp)?;
+        Ok(())
+    }
+
     /// Dedicated stdin/out API thread function.
     fn driver_thread(
         mut stdin: ChildStdin,
         stdout: ChildStdout,
         call_rx: mpsc::Receiver<KvCall>,
         resp_tx: mpsc::Sender<KvResp>,
-    ) -> Result<(), RunnerError> {
+    ) {
         READBUF.with(|buf| {
             let line = &mut buf.borrow_mut();
             let mut stdout = BufReader::new(stdout);
+            let mut stopped = false;
 
             loop {
-                let call = call_rx.recv()?;
-                call.into_write(&mut stdin)?;
-                let resp = KvResp::from_read(&mut stdout, line)?;
-                resp_tx.send(resp)?;
+                if let Err(err) = Self::driver_iter(
+                    &mut stdin,
+                    &mut stdout,
+                    &call_rx,
+                    &resp_tx,
+                    line,
+                    &mut stopped,
+                ) {
+                    if !stopped && !matches!(err, RunnerError::Chan(_)) {
+                        eprintln!("Error in driver: {}", err);
+                    }
+                    break;
+                }
             }
         })
     }
@@ -96,8 +141,8 @@ impl ClientProc {
     }
 
     /// Wait for the next KV operation response from the client process.
-    pub fn wait_resp(&mut self) -> Result<KvResp, RunnerError> {
-        let resp = self.resp_rx.recv()?;
+    pub fn wait_resp(&mut self, timeout: Duration) -> Result<KvResp, RunnerError> {
+        let resp = self.resp_rx.recv_timeout(timeout)?;
         Ok(resp)
     }
 
@@ -105,7 +150,7 @@ impl ClientProc {
     /// consuming self.
     pub fn stop(mut self) -> Result<(), RunnerError> {
         self.call_tx.send(KvCall::Stop)?;
-        let resp = self.wait_resp()?;
+        let resp = self.wait_resp(Duration::from_secs(5))?;
         if !matches!(resp, KvResp::Stop) {
             return Err(RunnerError::Io(
                 "unexpected response, expecting STOP".into(),

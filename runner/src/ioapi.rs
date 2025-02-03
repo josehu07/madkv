@@ -3,10 +3,12 @@
 use std::io;
 use std::str::SplitWhitespace;
 
+use strum::EnumCount;
+
 use crate::RunnerError;
 
 /// KV operation call type.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, EnumCount)]
 pub enum KvCall {
     Put { key: String, value: String },
     Swap { key: String, value: String },
@@ -30,9 +32,23 @@ impl KvCall {
             KvCall::Stop => Ok(writeln!(writer, "STOP")?),
         }
     }
+
+    /// Returns the value update made by this operation call:
+    ///   - `None` if read-only operation
+    ///   - `Some((key, None))` if Delete operation
+    ///   - `Some((key, Some(value)))` if Put or Swap operation
+    pub fn update_info(&self) -> Option<(String, Option<String>)> {
+        match self {
+            KvCall::Put { key, value, .. } => Some((key.clone(), Some(value.clone()))),
+            KvCall::Swap { key, value, .. } => Some((key.clone(), Some(value.clone()))),
+            KvCall::Delete { key, .. } => Some((key.clone(), None)),
+            _ => None,
+        }
+    }
 }
 
 /// KV operation response type.
+#[derive(Debug, Clone, EnumCount)]
 pub enum KvResp {
     Put {
         key: String,
@@ -64,7 +80,15 @@ impl KvResp {
         mut reader: impl io::BufRead,
         buffer: &mut String,
     ) -> Result<usize, RunnerError> {
-        Ok(reader.read_line(buffer)?)
+        buffer.clear();
+        let size = loop {
+            let size = reader.read_line(buffer)?;
+            // skip empty lines
+            if !buffer.trim().is_empty() {
+                break size;
+            }
+        };
+        Ok(size)
     }
 
     /// Return an iterator over a line's whitespace-delimited segments.
@@ -81,7 +105,7 @@ impl KvResp {
     }
 
     /// Construct a KV operation response from a reader.
-    pub fn from_read(
+    pub(crate) fn from_read(
         reader: &mut impl io::BufRead,
         buffer: &mut String,
     ) -> Result<KvResp, RunnerError> {
@@ -91,7 +115,19 @@ impl KvResp {
         match segs.next() {
             Some("PUT") => Ok(KvResp::Put {
                 key: Self::expect_next_seg(&mut segs, buffer)?,
-                found: Self::expect_next_seg(&mut segs, buffer)?.parse::<bool>()?,
+                found: {
+                    let found = Self::expect_next_seg(&mut segs, buffer)?;
+                    if found == "found" {
+                        true
+                    } else if found == "not_found" {
+                        false
+                    } else {
+                        return Err(RunnerError::Parse(format!(
+                            "invalid 'found' field: {}",
+                            found
+                        )));
+                    }
+                },
             }),
 
             Some("SWAP") => Ok(KvResp::Swap {
@@ -149,7 +185,19 @@ impl KvResp {
 
             Some("DELETE") => Ok(KvResp::Delete {
                 key: Self::expect_next_seg(&mut segs, buffer)?,
-                found: Self::expect_next_seg(&mut segs, buffer)?.parse::<bool>()?,
+                found: {
+                    let found = Self::expect_next_seg(&mut segs, buffer)?;
+                    if found == "found" {
+                        true
+                    } else if found == "not_found" {
+                        false
+                    } else {
+                        return Err(RunnerError::Parse(format!(
+                            "invalid 'found' field: {}",
+                            found
+                        )));
+                    }
+                },
             }),
 
             Some("STOP") => Ok(KvResp::Stop),

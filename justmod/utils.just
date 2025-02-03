@@ -6,7 +6,12 @@ default:
 
 # build provided utilities (mode dev|rel)
 build mode="rel":
-    cargo build --workspace {{ if mode == "rel" { "-r" } else { "" } }}
+    cargo build -p runner {{ if mode == "rel" { "-r" } else { "" } }}
+    cargo build -p refcli {{ if mode == "rel" { "-r" } else { "" } }}
+
+# clean the build of provided utilities
+clean:
+    cargo clean
 
 # fetch the YCSB benchmark if haven't
 ycsb:

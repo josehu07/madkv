@@ -6,4 +6,3 @@ edition = "2021"
 authors = ["Guanzhou Hu <me@josehu.com>"]
 
 [dependencies]
-rand = { workspace = true }
