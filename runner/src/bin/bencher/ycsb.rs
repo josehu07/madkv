@@ -40,7 +40,7 @@ const fn ycsb_profile(workload: char) -> &'static str {
 #[derive(Debug)]
 pub struct YcsbDriver {
     handle: Child,
-    feeder: JoinHandle<Option<Stats>>,
+    feeder: JoinHandle<Option<(Stats, BTreeSet<String>)>>,
     signal: mpsc::Receiver<()>, // for timeout
 }
 
@@ -53,6 +53,7 @@ impl YcsbDriver {
         num_ops: usize,
         load: bool, // true if 'load', false if 'run'
         client: ClientProc,
+        ikeys: BTreeSet<String>,
     ) -> Result<YcsbDriver, RunnerError> {
         let mut handle = Command::new(YCSB_BIN)
             .arg(if load { "load" } else { "run" })
@@ -70,7 +71,7 @@ impl YcsbDriver {
         // the basic driver, translates output lines into our KV operations,
         // and feeds them to the KV client
         let (signal_tx, signal_rx) = mpsc::channel();
-        let feeder = thread::spawn(move || Self::feeder_thread(stdout, client, signal_tx));
+        let feeder = thread::spawn(move || Self::feeder_thread(stdout, client, ikeys, signal_tx));
 
         Ok(YcsbDriver {
             handle,
@@ -81,12 +82,15 @@ impl YcsbDriver {
 
     /// Wait for the workload to finish, returning the statistics reported by
     /// the feeder thread and consuming self. If feeder failed, returns `None`.
-    pub(crate) fn wait(mut self, timeout: Duration) -> Result<Option<Stats>, RunnerError> {
+    pub(crate) fn wait(
+        mut self,
+        timeout: Duration,
+    ) -> Result<Option<(Stats, BTreeSet<String>)>, RunnerError> {
         self.signal.recv_timeout(timeout)?;
-        let stats = self.feeder.join().map_err(|_| RunnerError::Join)?;
+        let feeder_ret = self.feeder.join().map_err(|_| RunnerError::Join)?;
 
         self.handle.kill()?;
-        Ok(stats)
+        Ok(feeder_ret)
     }
 
     /// Parse the key from YCSB call line.
@@ -95,6 +99,7 @@ impl YcsbDriver {
             .next()
             .ok_or(RunnerError::Parse("missing key segment".into()))?
             .to_string();
+        key.push('_');
         key.push_str(
             segs.next()
                 .ok_or(RunnerError::Parse("missing key segment".into()))?,
@@ -137,14 +142,14 @@ impl YcsbDriver {
     /// not a call line.
     fn interpret_ycsb_call(
         line: &str,
-        keys_seen: &mut BTreeSet<String>,
+        ikeys: &mut BTreeSet<String>,
     ) -> Result<Option<KvCall>, RunnerError> {
         let mut segs = line.split_whitespace();
         match segs.next() {
             Some("INSERT") => {
                 let key = Self::parse_ycsb_key(&mut segs)?;
                 let value = Self::parse_ycsb_value(&mut segs)?;
-                keys_seen.insert(key.clone());
+                ikeys.insert(key.clone());
                 Ok(Some(KvCall::Put { key, value }))
             }
 
@@ -161,14 +166,14 @@ impl YcsbDriver {
 
             Some("SCAN") => {
                 let key_start = Self::parse_ycsb_key(&mut segs)?;
-                let key_end = if keys_seen.is_empty() {
-                    "usertable_user999".into()
+                let key_end = if ikeys.is_empty() {
+                    "zzzzzzzz".into()
                 } else {
                     let scnt = Self::parse_ycsb_scnt(&mut segs)?;
-                    keys_seen
+                    ikeys
                         .range(key_start.clone()..)
                         .nth(scnt - 1)
-                        .unwrap_or(keys_seen.last().unwrap())
+                        .unwrap_or(ikeys.last().unwrap())
                         .clone()
                 };
                 Ok(Some(KvCall::Scan { key_start, key_end }))
@@ -226,7 +231,7 @@ impl YcsbDriver {
         stdout: &mut BufReader<ChildStdout>,
         client: &mut ClientProc,
         line: &mut String,
-        keys_seen: &mut BTreeSet<String>,
+        ikeys: &mut BTreeSet<String>,
         stats: &mut Stats,
         ended: &mut bool,
     ) -> Result<(), RunnerError> {
@@ -243,7 +248,7 @@ impl YcsbDriver {
             return Ok(());
         }
 
-        if let Some(call) = Self::interpret_ycsb_call(line, keys_seen)? {
+        if let Some(call) = Self::interpret_ycsb_call(line, ikeys)? {
             // is an operation call, do it synchronously
             client.send_call(call)?;
             let _ = client.wait_resp(RESP_TIMEOUT)?;
@@ -258,13 +263,14 @@ impl YcsbDriver {
         Ok(())
     }
 
-    /// Translator & feeder thread function.
+    /// Translator & feeder thread function. Returns a tuple of statistics
+    /// collected and sorted list of keys inserted on success.
     fn feeder_thread(
         stdout: ChildStdout,
         mut client: ClientProc,
+        mut ikeys: BTreeSet<String>,
         signal: mpsc::Sender<()>,
-    ) -> Option<Stats> {
-        let mut keys_seen = BTreeSet::new();
+    ) -> Option<(Stats, BTreeSet<String>)> {
         let mut stats = Stats::new();
         let mut ended = false;
 
@@ -277,7 +283,7 @@ impl YcsbDriver {
                     &mut stdout,
                     &mut client,
                     line,
-                    &mut keys_seen,
+                    &mut ikeys,
                     &mut stats,
                     &mut ended,
                 ) {
@@ -304,7 +310,7 @@ impl YcsbDriver {
         } else {
             // ended successfully
             stats.merged = 1;
-            Some(stats)
+            Some((stats, ikeys))
         }
     }
 }

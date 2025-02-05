@@ -30,7 +30,33 @@ Install the following dependencies on all machines (instructions are for CloudLa
 <p></p>
 
 ```bash
+# rustc & cargo, etc.
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+</details>
+
+<details>
+<summary>Python 3.12 & libraries...</summary>
+<p></p>
+
+```bash
+# pyenv
+curl https://pyenv.run | bash
+tee -a $HOME/.bashrc <<EOF
+export PYENV_ROOT="\$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="\$PYENV_ROOT/bin:\$PATH"
+eval "\$(pyenv init -)"
+EOF
+source $HOME/.bashrc
+
+# python 3.12
+sudo apt install libssl-dev
+pyenv install 3.12
+pyenv global 3.12
+
+# pip packages
+pip3 install numpy matplotlib
 ```
 
 </details>
@@ -40,8 +66,11 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 <p></p>
 
 ```bash
+# add just gpg
 wget -qO - 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
 echo "deb [arch=all,$(dpkg --print-architecture) signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+
+# apt install
 sudo apt update
 sudo apt install tree just default-jre liblog4j2-java
 ```
@@ -56,6 +85,7 @@ The codebase contains the following essential files:
 * `justmod/`: project-specific Justfiles to be included as modules
 * `refcli/`: a dummy client that demonstrates the stdin/out workloads interface
 * `runner/`: a multi-functional KV testing & benchmarking utility
+* `scripts/`: helper scripts for plotting, report generation, & grading
 * `src/` or any other directory name to your liking: source code of your KV store server and client
 
 Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language of their choice, and add proper invocation commands to project-specific Justfiles for automation. We recommend students get familiar with the basics of the [`just` tool](https://github.com/casey/just).

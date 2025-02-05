@@ -1,9 +1,5 @@
 //! Driver library that runs a key-value client with automated workloads.
 
-// TODO:
-//   report generator?
-//   web vis frontend?
-
 mod error;
 pub use error::RunnerError;
 

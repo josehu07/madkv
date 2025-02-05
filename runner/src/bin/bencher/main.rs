@@ -1,6 +1,6 @@
 //! YCSB benchmarking utility.
 
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::thread;
 use std::time::Duration;
 
@@ -122,23 +122,36 @@ impl Stats {
 }
 
 /// YCSB benchmarking logic.
-fn ycsb_bench(args: &Args, clients: Vec<ClientProc>, load: bool) -> Result<Stats, RunnerError> {
+fn ycsb_bench(
+    args: &Args,
+    clients: Vec<ClientProc>,
+    load: bool,
+    ikeys: BTreeSet<String>,
+) -> Result<(Stats, BTreeSet<String>), RunnerError> {
     let mut drivers = vec![];
     for client in clients {
-        drivers.push(YcsbDriver::exec(args.workload, args.num_ops, load, client)?);
+        drivers.push(YcsbDriver::exec(
+            args.workload,
+            args.num_ops,
+            load,
+            client,
+            ikeys.clone(),
+        )?);
     }
     println!("  Launched {} YCSB drivers, now waiting...", drivers.len());
 
     let mut stats = Stats::new();
+    let mut ikeys = BTreeSet::new();
     for driver in drivers {
-        if let Some(cli_stats) = driver.wait(YCSB_TIMEOUT)? {
+        if let Some((cli_stats, cli_ikeys)) = driver.wait(YCSB_TIMEOUT)? {
             stats.merge(cli_stats);
+            ikeys.extend(cli_ikeys);
         } else {
             return Err(RunnerError::Io("a YCSB driver process failed".into()));
         }
     }
 
-    Ok(stats)
+    Ok((stats, ikeys))
 }
 
 /// Launcher utility arguments.
@@ -168,7 +181,7 @@ fn main() -> Result<(), RunnerError> {
     assert!(VALID_WORKLOADS.contains(&args.workload));
 
     // YCSB benchmark load phase
-    let stats_load = {
+    let (stats_load, ikeys_load) = {
         // run load-phase clients concurrently
         let mut clients_load = vec![];
         for _ in 0..args.num_clis {
@@ -182,11 +195,11 @@ fn main() -> Result<(), RunnerError> {
         ));
         cprintln!("<s><yellow>Benchmarking [Load] phase...</></>");
 
-        ycsb_bench(&args, clients_load, true)?
+        ycsb_bench(&args, clients_load, true, BTreeSet::new())?
     };
 
     // YCSB benchmark run phase
-    let stats_run = {
+    let (stats_run, _) = {
         // run run-phase clients concurrently
         let mut clients_run = vec![];
         for _ in 0..args.num_clis {
@@ -200,7 +213,7 @@ fn main() -> Result<(), RunnerError> {
         ));
         cprintln!("<s><yellow>Benchmarking [Run] phase...</></>");
 
-        ycsb_bench(&args, clients_run, false)?
+        ycsb_bench(&args, clients_run, false, ikeys_load)?
     };
 
     cprintln!(
