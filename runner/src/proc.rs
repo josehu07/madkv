@@ -59,56 +59,6 @@ pub struct ClientProc {
 }
 
 impl ClientProc {
-    /// One iteration of the driver thread loop.
-    fn driver_iter(
-        stdin: &mut ChildStdin,
-        stdout: &mut BufReader<ChildStdout>,
-        call_rx: &mpsc::Receiver<KvCall>,
-        resp_tx: &mpsc::Sender<KvResp>,
-        line: &mut String,
-        stopped: &mut bool,
-    ) -> Result<(), RunnerError> {
-        let call = call_rx.recv()?;
-        if let KvCall::Stop = call {
-            *stopped = true;
-        }
-        call.into_write(stdin)?;
-
-        let resp = KvResp::from_read(stdout, line)?;
-        resp_tx.send(resp)?;
-        Ok(())
-    }
-
-    /// Dedicated stdin/out API thread function.
-    fn driver_thread(
-        mut stdin: ChildStdin,
-        stdout: ChildStdout,
-        call_rx: mpsc::Receiver<KvCall>,
-        resp_tx: mpsc::Sender<KvResp>,
-    ) {
-        READBUF.with(|buf| {
-            let line = &mut buf.borrow_mut();
-            let mut stdout = BufReader::new(stdout);
-            let mut stopped = false;
-
-            loop {
-                if let Err(err) = Self::driver_iter(
-                    &mut stdin,
-                    &mut stdout,
-                    &call_rx,
-                    &resp_tx,
-                    line,
-                    &mut stopped,
-                ) {
-                    if !stopped && !matches!(err, RunnerError::Chan(_)) {
-                        eprintln!("Error in driver: {}", err);
-                    }
-                    break;
-                }
-            }
-        })
-    }
-
     /// Run a client process using provided `just` recipe args, returning a
     /// handle to it.
     pub fn new(just_args: Vec<&str>) -> Result<ClientProc, RunnerError> {
@@ -159,5 +109,55 @@ impl ClientProc {
 
         self.handle.kill()?;
         Ok(())
+    }
+
+    /// One iteration of the driver thread loop.
+    fn driver_iter(
+        stdin: &mut ChildStdin,
+        stdout: &mut BufReader<ChildStdout>,
+        call_rx: &mpsc::Receiver<KvCall>,
+        resp_tx: &mpsc::Sender<KvResp>,
+        line: &mut String,
+        stopped: &mut bool,
+    ) -> Result<(), RunnerError> {
+        let call = call_rx.recv()?;
+        if let KvCall::Stop = call {
+            *stopped = true;
+        }
+        call.into_write(stdin)?;
+
+        let resp = KvResp::from_read(stdout, line)?;
+        resp_tx.send(resp)?;
+        Ok(())
+    }
+
+    /// Dedicated stdin/out API thread function.
+    fn driver_thread(
+        mut stdin: ChildStdin,
+        stdout: ChildStdout,
+        call_rx: mpsc::Receiver<KvCall>,
+        resp_tx: mpsc::Sender<KvResp>,
+    ) {
+        READBUF.with(|buf| {
+            let line = &mut buf.borrow_mut();
+            let mut stdout = BufReader::new(stdout);
+            let mut stopped = false;
+
+            loop {
+                if let Err(err) = Self::driver_iter(
+                    &mut stdin,
+                    &mut stdout,
+                    &call_rx,
+                    &resp_tx,
+                    line,
+                    &mut stopped,
+                ) {
+                    if !stopped && !matches!(err, RunnerError::Chan(_)) {
+                        eprintln!("Error in driver: {}", err);
+                    }
+                    break;
+                }
+            }
+        })
     }
 }

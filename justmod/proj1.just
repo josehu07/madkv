@@ -67,7 +67,7 @@ kill:
 service listen="0.0.0.0:3777":
     just p1::build
     just utils::build
-    cargo run -p runner --bin service -- \
+    cargo run -p runner -r --bin service -- \
         --just-args p1::server "{{listen}}"
 
 # ensure a subdir under 'tmp/' exists
@@ -97,7 +97,11 @@ bench nclis wload server="127.0.0.1:3777": (tmpdir "bench")
     just p1::build
     just utils::build
     just utils::ycsb
-    # TODO: to be announced
+    cargo run -p runner -r --bin bencher -- \
+        --num-clis "{{nclis}}" \
+        --workload "{{wload}}" \
+        --just-args p1::client "{{server}}" \
+        | tee "/tmp/madkv-p1/bench/bench-{{nclis}}-{{wload}}.log"
     just p1::kill
 
 # generate .md report template from existing results (wip)

@@ -25,30 +25,6 @@ use random::*;
 mod history;
 use history::*;
 
-/// Fuzzer utility arguments.
-#[derive(Parser, Debug)]
-struct Args {
-    /// Number concurrent clients.
-    #[arg(short, long, default_value = "1")]
-    num_clis: usize,
-
-    /// Number of keys touched by each client.
-    #[arg(short, long, default_value = "5")]
-    num_keys: usize,
-
-    /// Average number of operations per client to run.
-    #[arg(short, long, default_value = "5000")]
-    num_ops: usize,
-
-    /// False if use disjoint sets of keys per client, otherwise true.
-    #[arg(short, long, default_value = "false")]
-    conflict: bool,
-
-    /// Client `just` invocation arguments.
-    #[arg(short, long, num_args(1..))]
-    just_args: Vec<String>,
-}
-
 /// Statistics about the fuzz testing round.
 struct Stats {
     cnt_put: usize,
@@ -61,7 +37,7 @@ struct Stats {
 
 impl Stats {
     fn new(keys: &[Vec<String>]) -> Self {
-        Self {
+        Stats {
             cnt_put: 0,
             cnt_swap: 0,
             cnt_get: 0,
@@ -212,6 +188,30 @@ fn fuzz_test(
     })
 }
 
+/// Fuzzer utility arguments.
+#[derive(Parser, Debug)]
+struct Args {
+    /// Number of concurrent clients.
+    #[arg(short, long, default_value = "1")]
+    num_clis: usize,
+
+    /// Number of keys touched by each client.
+    #[arg(short, long, default_value = "5")]
+    num_keys: usize,
+
+    /// Average number of operations per client to run.
+    #[arg(short, long, default_value = "5000")]
+    num_ops: usize,
+
+    /// False if use disjoint sets of keys per client, otherwise true.
+    #[arg(short, long, default_value = "false")]
+    conflict: bool,
+
+    /// Client `just` invocation arguments.
+    #[arg(short, long, num_args(1..))]
+    just_args: Vec<String>,
+}
+
 fn main() -> Result<(), RunnerError> {
     let args = Args::parse();
     cprintln!("<s><yellow>Fuzz testing configuration:</></> {:#?}", args);
@@ -244,7 +244,9 @@ fn main() -> Result<(), RunnerError> {
     }
 
     // wait for a few seconds to let cargo finish build check
-    thread::sleep(Duration::from_secs(2));
+    thread::sleep(Duration::from_secs(
+        (0.3 * args.num_clis as f64).ceil() as u64
+    ));
     cprintln!("<s><yellow>Fuzzing starts...</></>");
 
     // run fuzz testing

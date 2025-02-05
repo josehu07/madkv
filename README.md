@@ -25,20 +25,28 @@ git merge main
 
 Install the following dependencies on all machines (instructions are for CloudLab instances running Ubuntu 22.04):
 
-* Rust toolchain (>= 1.84):
+<details>
+<summary>Rust toolchain (>= 1.84)...</summary>
+<p></p>
 
-    ```bash
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-    ```
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
 
-* Packages (`tree`, `just` >= 1.34):
+</details>
 
-    ```bash
-    wget -qO - 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-    echo "deb [arch=all,$(dpkg --print-architecture) signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-    sudo apt update
-    sudo apt install tree just
-    ```
+<details>
+<summary>Packages (tree, just >= 1.34, java)...</summary>
+<p></p>
+
+```bash
+wget -qO - 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
+echo "deb [arch=all,$(dpkg --print-architecture) signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+sudo apt update
+sudo apt install tree just default-jre liblog4j2-java
+```
+
+</details>
 
 ## Code Structure
 
@@ -56,7 +64,9 @@ See the course Canvas specs for details about the KV store project and the tasks
 
 ## Just Recipes
 
-The following are common `just` recipes (subject to updates).
+<details>
+<summary>The following are common just recipes (subject to updates)...</summary>
+<p></p>
 
 List `just` recipes (of a module):
 
@@ -88,6 +98,8 @@ Fetch the YCSB benchmark to `ycsb/`:
 just utils::ycsb
 ```
 
+</details>
+
 All actions relevant to grading should be made invocable through `just` recipes. Students need to fill out some of the recipes in the project-level `Justfile`s (e.g., `justmod/proj1.just`) to surface their own KV store system code.
 
 For each project, fill in the blanks of `justmod/proj<x>.just` with proper commands to invoke your KV server and client executables. Then, follow the Canvas project spec and complete the required tasks.
@@ -96,6 +108,7 @@ For each project, fill in the blanks of `justmod/proj<x>.just` with proper comma
 
 <details>
 <summary>The following recipes should be ready for project 1...</summary>
+<p></p>
 
 Install extra dependencies of your KV system code:
 
@@ -153,17 +166,24 @@ Run fuzz testing with given configuration and record outputs to `/tmp/madkv-p1/f
 just p1::fuzz <num_clients> <conflict ("yes" or "no")> <server_addr>
 ```
 
-> TBA (We are still working on the YCSB benchmarking and report generation utility for project 1; it will be announced soon. In the meantime, you may start working on your KV system code and try fuzz testing.)
+Run YCSB benchmarking with given configuration and record outputs to `/tmp/madkv-p1/bench/`:
+
+```bash
+just p1::bench <num_clients> <workload ("a" to "f")> <server_addr>
+```
+
+> TBA (We are still working on the report generation utility for project 1; it will be announced soon.)
 </details>
 
 ## Client Automation Interface
 
-As described in the Canvas project specs, the KV client should by default support a stdin/out-based workload interface for automation. The interface is formatted as the following (but subject to updates).
+As described in the Canvas project specs, the KV client should by default support a stdin/out-based workload interface for automation. The interface is formatted as the following (but subject to updates across projects).
 
 The client in this mode should block on reading stdin line by line, interpreting each line as a synchronous key-value API call.
 
 <details>
 <summary>The input lines have the following format...</summary>
+<p></p>
 
 ```text
 PUT <key> <value>
@@ -180,6 +200,7 @@ After the completion of an API call, the client should print to stdout a line (e
 
 <details>
 <summary>The output lines should have the following format...</summary>
+<p></p>
 
 ```text
 PUT <key> found
@@ -200,7 +221,7 @@ STOP  # confirm STOP before exit
 
 </details>
 
-Assume all keys and values are ASCII alphanumeric, case-sensitive strings. All keywords are also case-sensitive.
+Assume all keys and values are ASCII alphanumeric, case-sensitive strings. All keywords are also case-sensitive. All spaces are regular spaces and the number of them does not matter.
 
 ---
 

@@ -1,7 +1,6 @@
 //! Driver library that runs a key-value client with automated workloads.
 
 // TODO:
-//   ycsb benchmarker
 //   report generator?
 //   web vis frontend?
 
