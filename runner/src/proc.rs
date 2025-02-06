@@ -100,7 +100,7 @@ impl ClientProc {
     /// consuming self.
     pub fn stop(mut self) -> Result<(), RunnerError> {
         self.call_tx.send(KvCall::Stop)?;
-        let resp = self.wait_resp(Duration::from_secs(5))?;
+        let resp = self.wait_resp(Duration::from_secs(10))?;
         if !matches!(resp, KvResp::Stop) {
             return Err(RunnerError::Io(
                 "unexpected response, expecting STOP".into(),

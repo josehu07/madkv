@@ -18,6 +18,10 @@ rsync remote:
         --exclude "ycsb/" \
         . "{{remote}}:~/madkv"
 
+# fetch a file/dir from remote (experimental)
+fetch remote path:
+    rsync -aP {{remote}}:~/madkv/{{path}} .
+
 # common utils recipes
 mod utils 'justmod/utils.just'
 

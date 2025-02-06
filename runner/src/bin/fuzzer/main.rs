@@ -16,7 +16,7 @@ use runner::{ClientProc, KvResp, RunnerError};
 // Hardcoded constants:
 const KEY_LEN: usize = 8;
 const VALUE_LEN: usize = 16;
-const RESP_TIMEOUT: Duration = Duration::from_secs(5);
+const RESP_TIMEOUT: Duration = Duration::from_secs(10);
 const REMAIN_THRESH: usize = 1000;
 
 mod random;

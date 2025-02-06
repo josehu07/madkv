@@ -51,12 +51,13 @@ EOF
 source $HOME/.bashrc
 
 # python 3.12
-sudo apt install libssl-dev
+sudo apt update
+sudo apt install libssl-dev zlib1g-dev
 pyenv install 3.12
 pyenv global 3.12
 
 # pip packages
-pip3 install numpy matplotlib
+pip3 install numpy matplotlib termcolor
 ```
 
 </details>
@@ -85,7 +86,7 @@ The codebase contains the following essential files:
 * `justmod/`: project-specific Justfiles to be included as modules
 * `refcli/`: a dummy client that demonstrates the stdin/out workloads interface
 * `runner/`: a multi-functional KV testing & benchmarking utility
-* `scripts/`: helper scripts for plotting, report generation, & grading
+* `sumgen/`: helper scripts for plotting & report generation
 * `src/` or any other directory name to your liking: source code of your KV store server and client
 
 Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language of their choice, and add proper invocation commands to project-specific Justfiles for automation. We recommend students get familiar with the basics of the [`just` tool](https://github.com/casey/just).
@@ -202,7 +203,14 @@ Run YCSB benchmarking with given configuration and record outputs to `/tmp/madkv
 just p1::bench <num_clients> <workload ("a" to "f")> <server_addr>
 ```
 
-> TBA (We are still working on the report generation utility for project 1; it will be announced soon.)
+Generate a report template at `report/proj1.md` from saved results under `/tmp/madkv-p1/`:
+
+```bash
+just p1::report
+```
+
+Then, download the `report/` directory (which includes generated plots) and make your edits.
+
 </details>
 
 ## Client Automation Interface

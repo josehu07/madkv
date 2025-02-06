@@ -106,4 +106,4 @@ bench nclis wload server="127.0.0.1:3777": (tmpdir "bench")
 
 # generate .md report template from existing results (wip)
 report:
-    # TODO: to be announced
+    python3 sumgen/proj1.py
