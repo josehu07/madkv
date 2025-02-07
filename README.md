@@ -82,7 +82,7 @@ sudo apt install tree just default-jre liblog4j2-java
 
 The codebase contains the following essential files:
 
-* `Justfile`: the top-level Justfile, entrance to `just` invocations
+* `Justfile`: the top-level Justfile, the entrance to `just` invocations
 * `justmod/`: project-specific Justfiles to be included as modules
 * `refcli/`: a dummy client that demonstrates the stdin/out workloads interface
 * `runner/`: a multi-functional KV testing & benchmarking utility
@@ -141,7 +141,7 @@ For each project, fill in the blanks of `justmod/proj<x>.just` with proper comma
 <summary>The following recipes should be ready for project 1...</summary>
 <p></p>
 
-Install extra dependencies of your KV system code:
+Install extra dependencies of your KV system code if any (e.g., protobuf compiler):
 
 ```bash
 just p1::deps
@@ -151,6 +151,7 @@ Build or clean your KV store executables:
 
 ```bash
 just p1::build
+just p1::clean
 ```
 
 Launch the KV store server process, listening on address:
@@ -209,7 +210,7 @@ Generate a report template at `report/proj1.md` from saved results under `/tmp/m
 just p1::report
 ```
 
-Then, download the `report/` directory (which includes generated plots) and make your edits.
+This command first prints a list of testing & benchmarking configurations you need to run and get outputs. Once all outputs are ready under `/tmp/madkv-p1/`, it generates the report template and plots selected performance results. Download the `report/` directory (which includes generated plots) and make your edits to the report.
 
 </details>
 
