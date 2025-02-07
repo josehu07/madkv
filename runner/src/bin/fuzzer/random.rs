@@ -36,8 +36,8 @@ pub(crate) fn gen_call_vs_wait(ops_called: usize, num_ops: usize, flying: &BitVe
 /// Generate a random client index, retry until one with expected on-the-fly
 /// status is found.
 pub(crate) fn gen_rand_client(flying: &BitVec, want_flying: bool) -> usize {
-    debug_assert!(want_flying || flying.all());
-    debug_assert!(!want_flying || flying.none());
+    debug_assert!(want_flying || !flying.all());
+    debug_assert!(!want_flying || !flying.none());
     loop {
         let cidx = gen_rand_index(flying.len());
         if flying.get(cidx).unwrap() == want_flying {
