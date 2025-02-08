@@ -192,15 +192,15 @@ fn fuzz_test(
 #[derive(Parser, Debug)]
 struct Args {
     /// Number of concurrent clients.
-    #[arg(short, long, default_value = "1")]
+    #[arg(long, default_value = "1")]
     num_clis: usize,
 
     /// Number of keys touched by each client.
-    #[arg(short, long, default_value = "5")]
+    #[arg(long, default_value = "5")]
     num_keys: usize,
 
     /// Average number of operations per client to run.
-    #[arg(short, long, default_value = "5000")]
+    #[arg(long, default_value = "5000")]
     num_ops: usize,
 
     /// False if use disjoint sets of keys per client, otherwise true.
