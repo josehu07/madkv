@@ -158,11 +158,11 @@ fn ycsb_bench(
 #[derive(Parser, Debug)]
 struct Args {
     /// Number of concurrent clients.
-    #[arg(short, long, default_value = "1")]
+    #[arg(long, default_value = "1")]
     num_clis: usize,
 
     /// Number of operations per client to run.
-    #[arg(short, long, default_value = "10000")]
+    #[arg(long, default_value = "10000")]
     num_ops: usize,
 
     /// YCSB workload profile name ('a' to 'f').
