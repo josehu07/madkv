@@ -109,12 +109,6 @@ just utils::build
 just utils::clean
 ```
 
-Clean the build of provided utilities:
-
-```bash
-just utils::clean
-```
-
 Fetch the YCSB benchmark to `ycsb/`:
 
 ```bash
