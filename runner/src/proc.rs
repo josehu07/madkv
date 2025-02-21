@@ -14,22 +14,22 @@ thread_local! {
     static READBUF: RefCell<String> = const { RefCell::new(String::new()) };
 }
 
-/// Wrapper handle to a KV server process.
+/// Wrapper handle to a KV server (or manager) process.
 #[derive(Debug)]
 pub struct ServerProc {
     handle: Child,
 }
 
 impl ServerProc {
-    /// Run a server process using provided `just` recipe args, returning a
-    /// handle to it.
+    /// Run a server or manager process using provided `just` recipe args,
+    /// returning a handle to it.
     pub fn new(just_args: Vec<&str>) -> Result<ServerProc, RunnerError> {
         let handle = Command::new("just").args(just_args).spawn()?;
         Ok(ServerProc { handle })
     }
 
-    /// Wait for the server process to exit (usually only happens on errors),
-    /// returning `Ok` only upon successful termination.
+    /// Wait for the server or manager process to exit (usually only happens
+    /// on errors), returning `Ok` only upon successful termination.
     pub fn wait(mut self) -> Result<(), RunnerError> {
         let status = self.handle.wait()?;
         if status.success() {
@@ -42,7 +42,7 @@ impl ServerProc {
         }
     }
 
-    /// Kill the server process, consuming self.
+    /// Kill the server or manager process, consuming self.
     pub fn stop(mut self) -> Result<(), RunnerError> {
         self.handle.kill()?;
         Ok(())

@@ -26,6 +26,12 @@ target/
 # Mac DS_Store
 .DS_Store
 
+# Python
+.venv/
+**/__pycache__/
+
 # Project-specific
 ycsb/
 report/
+backer.*/
+.remotes

@@ -1,0 +1,10 @@
+[project]
+name = "madkv"
+version = "0.1.0"
+requires-python = ">=3.12"
+authors = [{ name = "Guanzhou Hu", email = "me@josehu.com" }]
+dependencies = [
+    "matplotlib>=3.10.0",
+    "numpy>=2.2.3",
+    "termcolor>=2.5.0",
+]

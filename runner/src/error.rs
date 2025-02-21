@@ -29,44 +29,33 @@ impl fmt::Display for RunnerError {
     }
 }
 
-impl From<io::Error> for RunnerError {
-    fn from(err: io::Error) -> RunnerError {
-        RunnerError::Io(err.to_string())
-    }
+/// Convenient macro to implement `From<>` traits for `RunnerError`.
+macro_rules! impl_from {
+    ($fromtype:ty, $variant:ident) => {
+        impl From<$fromtype> for RunnerError {
+            fn from(err: $fromtype) -> RunnerError {
+                RunnerError::$variant(err.to_string())
+            }
+        }
+    };
 }
 
-impl From<str::ParseBoolError> for RunnerError {
-    fn from(err: str::ParseBoolError) -> RunnerError {
-        RunnerError::Parse(err.to_string())
-    }
+/// Single-generic form of the `impl_from!` macro.
+macro_rules! impl_from_generic {
+    ($fromtype:ty, $variant:ident) => {
+        impl<T> From<$fromtype> for RunnerError {
+            fn from(err: $fromtype) -> RunnerError {
+                RunnerError::$variant(err.to_string())
+            }
+        }
+    };
 }
 
-impl From<num::ParseIntError> for RunnerError {
-    fn from(err: num::ParseIntError) -> RunnerError {
-        RunnerError::Parse(err.to_string())
-    }
-}
+impl_from!(io::Error, Io);
+impl_from!(str::ParseBoolError, Parse);
+impl_from!(num::ParseIntError, Parse);
+impl_from!(num::ParseFloatError, Parse);
+impl_from!(mpsc::RecvError, Chan);
+impl_from!(mpsc::RecvTimeoutError, Chan);
 
-impl From<num::ParseFloatError> for RunnerError {
-    fn from(err: num::ParseFloatError) -> RunnerError {
-        RunnerError::Parse(err.to_string())
-    }
-}
-
-impl<T> From<mpsc::SendError<T>> for RunnerError {
-    fn from(err: mpsc::SendError<T>) -> RunnerError {
-        RunnerError::Chan(err.to_string())
-    }
-}
-
-impl From<mpsc::RecvError> for RunnerError {
-    fn from(err: mpsc::RecvError) -> RunnerError {
-        RunnerError::Chan(err.to_string())
-    }
-}
-
-impl From<mpsc::RecvTimeoutError> for RunnerError {
-    fn from(err: mpsc::RecvTimeoutError) -> RunnerError {
-        RunnerError::Chan(err.to_string())
-    }
-}
+impl_from_generic!(mpsc::SendError<T>, Chan);

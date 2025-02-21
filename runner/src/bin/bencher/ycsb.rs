@@ -250,6 +250,7 @@ impl YcsbDriver {
 
         if let Some(call) = Self::interpret_ycsb_call(line, ikeys)? {
             // is an operation call, do it synchronously
+            // RESP_TIMEOUT should be long enough to prevent false negatives
             client.send_call(call)?;
             let _ = client.wait_resp(RESP_TIMEOUT)?;
         } else if line.starts_with('[') {

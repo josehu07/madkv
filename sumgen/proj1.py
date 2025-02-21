@@ -22,6 +22,8 @@ REPORT_MD = """# CS 739 MadKV Project 1
 
 <u>Found the following testcase results:</u> {}
 
+You will run some testcases during demo time.
+
 ### Explanations
 
 *FIXME: add your explanations of each testcase*
@@ -35,6 +37,8 @@ num_clis | conflict | outcome
 1 | no | {}
 3 | no | {}
 3 | yes | {}
+
+You will run a multi-client conflicting-keys fuzz test during demo time.
 
 ### Comments
 
@@ -50,7 +54,7 @@ num_clis | conflict | outcome
 
 ![tput-trend]({})
 
-<u>Avg. & P99 latency trend vs. number of clients:</u>
+<u>Avg. latency trend vs. number of clients:</u>
 
 ![lats-trend]({})
 
@@ -211,9 +215,9 @@ def load_bench_results(result_dir, report_dir):
     plt.ylabel("P99 latency (op-agnostic, us)")
 
     plt.tight_layout()
-    plt.savefig(f"{report_dir}/plots/ycsb-single-cli.png", dpi=200)
+    plt.savefig(f"{report_dir}/plots-p1/ycsb-single-cli.png", dpi=200)
     plt.close()
-    results["ycsb-single-cli"] = "plots/ycsb-single-cli.png"
+    results["ycsb-single-cli"] = "plots-p1/ycsb-single-cli.png"
 
     # tput-trend
     nclis_list = [1, 10, 25, 40, 55, 70, 85]
@@ -242,9 +246,9 @@ def load_bench_results(result_dir, report_dir):
         plt.ylabel("Agg. throughput (ops/sec)")
 
     plt.tight_layout()
-    plt.savefig(f"{report_dir}/plots/ycsb-tput-trend.png", dpi=200)
+    plt.savefig(f"{report_dir}/plots-p1/ycsb-tput-trend.png", dpi=200)
     plt.close()
-    results["ycsb-tput-trend"] = "plots/ycsb-tput-trend.png"
+    results["ycsb-tput-trend"] = "plots-p1/ycsb-tput-trend.png"
 
     # lats-trend
     op_color = {
@@ -273,9 +277,9 @@ def load_bench_results(result_dir, report_dir):
         plt.legend()
 
     plt.tight_layout()
-    plt.savefig(f"{report_dir}/plots/ycsb-lats-trend.png", dpi=200)
+    plt.savefig(f"{report_dir}/plots-p1/ycsb-lats-trend.png", dpi=200)
     plt.close()
-    results["ycsb-lats-trend"] = "plots/ycsb-lats-trend.png"
+    results["ycsb-lats-trend"] = "plots-p1/ycsb-lats-trend.png"
 
     return results
 
@@ -314,9 +318,9 @@ if __name__ == "__main__":
     check_dir_exists(f"{args.result_dir}/tests")
     check_dir_exists(f"{args.result_dir}/fuzz")
     check_dir_exists(f"{args.result_dir}/bench")
-    if not os.path.isdir(f"{args.report_dir}/plots"):
-        os.system(f"mkdir -p {args.report_dir}/plots")
-    check_dir_exists(f"{args.report_dir}/plots")
+    if not os.path.isdir(f"{args.report_dir}/plots-p1"):
+        os.system(f"mkdir -p {args.report_dir}/plots-p1")
+    check_dir_exists(f"{args.report_dir}/plots-p1")
 
     cprint(
         f"Loading logged run results from '{args.result_dir}/'...",

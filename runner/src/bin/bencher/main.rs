@@ -12,7 +12,7 @@ use runner::{ClientProc, RunnerError};
 
 // Hardcoded constants:
 const VALID_WORKLOADS: [char; 6] = ['a', 'b', 'c', 'd', 'e', 'f'];
-const RESP_TIMEOUT: Duration = Duration::from_secs(10);
+const RESP_TIMEOUT: Duration = Duration::from_secs(60);
 const YCSB_TIMEOUT: Duration = Duration::from_secs(600);
 
 mod ycsb;
@@ -166,12 +166,12 @@ struct Args {
     num_ops: usize,
 
     /// YCSB workload profile name ('a' to 'f').
-    #[arg(short, long, default_value = "a")]
+    #[arg(long, default_value = "a")]
     workload: char,
 
     /// Client `just` invocation arguments.
-    #[arg(short, long, num_args(1..))]
-    just_args: Vec<String>,
+    #[arg(long, num_args(1..))]
+    client_just_args: Vec<String>,
 }
 
 fn main() -> Result<(), RunnerError> {
@@ -185,7 +185,8 @@ fn main() -> Result<(), RunnerError> {
         // run load-phase clients concurrently
         let mut clients_load = vec![];
         for _ in 0..args.num_clis {
-            let client = ClientProc::new(args.just_args.iter().map(|s| s.as_str()).collect())?;
+            let client =
+                ClientProc::new(args.client_just_args.iter().map(|s| s.as_str()).collect())?;
             clients_load.push(client);
         }
 
@@ -203,7 +204,8 @@ fn main() -> Result<(), RunnerError> {
         // run run-phase clients concurrently
         let mut clients_run = vec![];
         for _ in 0..args.num_clis {
-            let client = ClientProc::new(args.just_args.iter().map(|s| s.as_str()).collect())?;
+            let client =
+                ClientProc::new(args.client_just_args.iter().map(|s| s.as_str()).collect())?;
             clients_run.push(client);
         }
 

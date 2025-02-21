@@ -7,22 +7,33 @@ default:
 # install extra dependencies of your KV code
 deps:
     # FIXME: your dependency installation commands here
+    curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v25.6/protoc-25.6-linux-x86_64.zip
+    unzip protoc-25.6-linux-x86_64.zip -d protoc3
+    sudo mv protoc3/bin/* /usr/local/bin/
+    sudo mv protoc3/include/* /usr/local/include/
+    sudo chown $USER /usr/local/bin/protoc
+    sudo chown -R $USER /usr/local/include/google
+    rm protoc-25.6-linux-x86_64.zip
 
 # build your executables in release mode
 build:
     # FIXME: your build commands here (don't include clean)
+    cargo build -p kvstore -r
 
 # clean the build of your executables
 clean:
     # FIXME: your clean commands here
+    cargo clean
 
 # run your KV store server
 server listen="0.0.0.0:3777":
     # FIXME: your server run command here, listening on addr for new clients
+    -cargo run -p kvstore --bin server -r -- --listen-addr "{{listen}}"
 
 # run you KV store client in stdin/out interface mode
 client server="127.0.0.1:3777":
     # FIXME: your client run command here, connecting to server at addr
+    cargo run -p kvstore --bin client -r -- --server-addr "{{server}}"
 
 # run your KV store testcase 1 client
 test1 server="127.0.0.1:3777":
@@ -58,27 +69,33 @@ kill:
     #   TIP: commands such as 'pkill' may return non-zero exit code on success,
     #        which would by default abort the 'just' recipe early; prepend the
     #        command with a '-' sign to ignore its exit code
+    -sudo pkill -9 server > /dev/null 2>&1
+    -sudo pkill -9 client > /dev/null 2>&1
 
 # NOTE: feel free to add more recipes as you see fit...
 #       also feel free to add extra parameters to the recipes as you see fit,
 #       but don't change the existing parameters
+
+python_run := if `which uv || true` != "" { "uv run" } else { "python3" }
+tmpdir_prefix := "/tmp/madkv-p1"
 
 # launch a long-running KV store service
 service listen="0.0.0.0:3777":
     just p1::build
     just utils::build
     cargo run -p runner -r --bin service -- \
-        --just-args p1::server "{{listen}}"
+        --server-just-args p1::server "{{listen}}" \
+        --manager-just-args none
 
 # ensure a subdir under 'tmp/' exists
 tmpdir subdir:
-    mkdir -p "/tmp/madkv-p1/{{subdir}}"
+    mkdir -p "{{tmpdir_prefix}}/{{subdir}}"
 
 # run a student-provided testcase
 testcase num server="127.0.0.1:3777": (tmpdir "tests")
     just p1::build
     just "p1::test{{num}}" "{{server}}" \
-        | tee "/tmp/madkv-p1/tests/test{{num}}.log"
+        | tee "{{tmpdir_prefix}}/tests/test{{num}}.log"
     just p1::kill
 
 # run a fuzz testing scenario
@@ -88,8 +105,8 @@ fuzz nclis conflict="no" server="127.0.0.1:3777": (tmpdir "fuzz")
     cargo run -p runner -r --bin fuzzer -- \
         --num-clis "{{nclis}}" \
         {{ if conflict == "no" { "" } else { "--conflict" } }} \
-        --just-args p1::client "{{server}}" \
-        | tee "/tmp/madkv-p1/fuzz/fuzz-{{nclis}}-{{conflict}}.log"
+        --client-just-args p1::client "{{server}}" \
+        | tee "{{tmpdir_prefix}}/fuzz/fuzz-{{nclis}}-{{conflict}}.log"
     just p1::kill
 
 # run a YCSB benchmark workload
@@ -100,10 +117,10 @@ bench nclis wload server="127.0.0.1:3777": (tmpdir "bench")
     cargo run -p runner -r --bin bencher -- \
         --num-clis "{{nclis}}" \
         --workload "{{wload}}" \
-        --just-args p1::client "{{server}}" \
+        --client-just-args p1::client "{{server}}" \
         | tee "/tmp/madkv-p1/bench/bench-{{nclis}}-{{wload}}.log"
     just p1::kill
 
 # generate .md report template from existing results (wip)
 report:
-    python3 sumgen/proj1.py
+    {{python_run}} sumgen/proj1.py

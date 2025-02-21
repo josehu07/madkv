@@ -4,9 +4,9 @@
 ![code-size](https://img.shields.io/github/languages/code-size/josehu07/madkv?color=steelblue)
 ![license](https://img.shields.io/github/license/josehu07/madkv?color=green)
 
-This is the distributed key-value (KV) store project template for the Distributed Systems course (CS 739) at the University of Wisconsin--Madison. Through a few steps over the semester, students will build MadKV, a replicated, consensus-backed, fault-tolerant, and optionally partitioned key-value store system with good performance.
+This is the distributed key-value (KV) store project template for the Distributed Systems course (CS 739) at the University of Wisconsin--Madison. Through a few steps over the semester, students will build MadKV, a replicated, partitioned, consensus-backed, fault-tolerant, and extensible key-value store system with good performance.
 
-To get started, clone the repo to your development machine:
+To get started, clone the repo to your development machines:
 
 ```bash
 git clone https://github.com/josehu07/madkv.git
@@ -41,23 +41,14 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 <p></p>
 
 ```bash
-# pyenv
-curl https://pyenv.run | bash
-tee -a $HOME/.bashrc <<EOF
-export PYENV_ROOT="\$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="\$PYENV_ROOT/bin:\$PATH"
-eval "\$(pyenv init -)"
-EOF
-source $HOME/.bashrc
+# uv manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
 
-# python 3.12
-sudo apt update
-sudo apt install libssl-dev zlib1g-dev
-pyenv install 3.12
-pyenv global 3.12
-
-# pip packages
-pip3 install numpy matplotlib termcolor
+# python 3.12 & fetch deps
+cd madkv
+uv python install 3.12
+uv sync
 ```
 
 </details>
@@ -71,7 +62,7 @@ pip3 install numpy matplotlib termcolor
 wget -qO - 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
 echo "deb [arch=all,$(dpkg --print-architecture) signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
 
-# apt install
+# apt install packages
 sudo apt update
 sudo apt install tree just default-jre liblog4j2-java
 ```
@@ -87,11 +78,11 @@ The codebase contains the following essential files:
 * `refcli/`: a dummy client that demonstrates the stdin/out workloads interface
 * `runner/`: a multi-functional KV testing & benchmarking utility
 * `sumgen/`: helper scripts for plotting & report generation
-* `src/` or any other directory name to your liking: source code of your KV store server and client
+* `kvstore/` or any other directory name to your liking: source code of your KV store components
 
-Students will implement their KV store server and clients under some subdirectory (e.g., `src/`) in any language of their choice, and add proper invocation commands to project-specific Justfiles for automation. We recommend students get familiar with the basics of the [`just` tool](https://github.com/casey/just).
+Students will implement their KV store server, clients, and other components under some subdirectory (e.g., `kvstore/`) in any language/framework of their choice, and add proper invocation commands to project-specific Justfiles for automation. We recommend students get familiar with the basics of the [`just` tool](https://github.com/casey/just).
 
-See the course Canvas specs for details about the KV store project and the tasks to complete.
+See the course Canvas specs for details about the KV store projects and the tasks to complete.
 
 ## Just Recipes
 
@@ -111,10 +102,11 @@ List all files in the codebase as a tree:
 just tree
 ```
 
-Build the provided utilities:
+Build or clean the provided utilities:
 
 ```bash
 just utils::build
+just utils::clean
 ```
 
 Clean the build of provided utilities:
@@ -178,7 +170,7 @@ Kill all processes relevant to your KV store system:
 just p1::kill
 ```
 
-Once these recipes are correctly supplied, the following higher-level recipes will be runnable.
+Once these recipes are correctly supplied and properly tested, the following higher-level recipes will be runnable.
 
 Launch the long-running KV store server:
 
@@ -195,13 +187,13 @@ just p1::testcase <num> <server_addr>
 Run fuzz testing with given configuration and record outputs to `/tmp/madkv-p1/fuzz/`:
 
 ```bash
-just p1::fuzz <num_clients> <conflict ("yes" or "no")> <server_addr>
+just p1::fuzz <nclients> <conflict ("yes" or "no")> <server_addr>
 ```
 
 Run YCSB benchmarking with given configuration and record outputs to `/tmp/madkv-p1/bench/`:
 
 ```bash
-just p1::bench <num_clients> <workload ("a" to "f")> <server_addr>
+just p1::bench <nclients> <workload ("a" to "f")> <server_addr>
 ```
 
 Generate a report template at `report/proj1.md` from saved results under `/tmp/madkv-p1/`:
@@ -211,6 +203,84 @@ just p1::report
 ```
 
 This command first prints a list of testing & benchmarking configurations you need to run and get outputs. Once all outputs are ready under `/tmp/madkv-p1/`, it generates the report template and plots selected performance results. Download the `report/` directory (which includes generated plots) and make your edits to the report.
+
+</details>
+
+### Project 2
+
+<details>
+<summary>The following recipes should be ready for project 2...</summary>
+<p></p>
+
+Install extra dependencies of your KV system code if any (e.g., protobuf compiler, local storage library):
+
+```bash
+just p2::deps
+```
+
+Build or clean your KV store executables:
+
+```bash
+just p2::build
+just p2::clean
+```
+
+Launch the KV store manager process, listening on `0.0.0.0:<man_port>` and expecting the given comma-separated list of servers to form the cluster:
+
+```bash
+just p2::manager <man_port> <pub_ip0>:<api_port0>,<pub_ip1>:<api_port1>,...
+```
+
+Launch a KV store server process with node ID `<id>`, connecting to manager at `<manager_addr>` to register and listening on `0.0.0.0:<api_port>` for clients, using `<backer_path>` directory for durable storage:
+
+```bash
+just p2::server <id> <manager_addr> <api_port> <backer_path>
+```
+
+Run a KV store client process in stdin/out workload automation mode, connecting to manager at address:
+
+```bash
+just p2::client <manager_addr>
+```
+
+Kill all processes relevant to your KV store system:
+
+```bash
+just p2::kill
+```
+
+Once these recipes are correctly supplied, the following higher-level recipes will be runnable.
+
+Launch the KV store service components that reside in node `<node_id>`. This recipe uses the following convention:
+
+* manager uses the node ID `m`, and listens on `0.0.0.0:<man_port>`
+* server `x` uses the node ID `sx` where `x` is a partition ID integer (e.g., `s0`, `s1`, etc.). Server connects to manager using address `<man_ip>:<man_port>` and listens on `0.0.0.0:<api_portx>` for clients, and uses `<backer_prefix>.<node_id>/` as the durable storage path
+
+```bash
+just p2::service <node_id> <man_ip>:<man_port> <pub_ip0>:<api_port0>,<pub_ip1>:<api_port1>,... <backer_prefix>
+```
+
+The `service` recipe needs to be run for all server nodes with the proper node ID to establish the KV service.
+
+Run fuzz testing and record outputs to `/tmp/madkv-p2/fuzz/`. This time we always use 5 clients with conflicting keys. The parameters `<nservers>` and `<crashing>` are only used in setting the output log's filename; service behavior should be controlled manually:
+
+```bash
+just p2::fuzz <nservers> <crashing ("no" or "yes")> <manager_addr>
+```
+
+Run YCSB benchmarking with given configuration and record outputs to `/tmp/madkv-p2/bench/`:
+
+```bash
+just p2::bench <nclients> <workload ("a" to "f")> <nservers> <manager_addr>
+```
+
+Generate a report template at `report/proj2.md` from saved results under `/tmp/madkv-p2/`:
+
+```bash
+just p2::report
+```
+
+This command first prints a list of testing & benchmarking configurations you need to run and get outputs. Once all outputs are ready under `/tmp/madkv-p2/`, it generates the report template and plots selected performance results. Download the `report/` directory (which includes generated plots) and make your edits to the report.
 
 </details>
 
@@ -266,6 +336,6 @@ Assume all keys and values are ASCII alphanumeric, case-sensitive strings. All k
 
 **PLEASE DO NOT FORK PUBLICLY OR PUBLISH SOLUTIONS ONLINE.**
 
-Authored by [Guanzhou Hu](https://josehu.com). First offered in CS 739 Spring 2025 taught by [Prof. Andrea Arpaci-Dusseau](https://pages.cs.wisc.edu/~dusseau/).
+Authored by [Guanzhou Hu](https://josehu.com). First offered in CS 739 Spring 2025 taught by [Prof. Andrea Arpaci-Dusseau](https://pages.cs.wisc.edu/~dusseau/). To get the associated project specs and a reference solution in Rust for teaching purposes, please contact us.
 
 If you find replicated distributed systems interesting, take a look at [Summerset](https://github.com/josehu07/summerset) and [Linearize](https://github.com/josehu07/linearize) :-)
