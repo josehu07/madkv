@@ -7,33 +7,22 @@ default:
 # install extra dependencies of your KV code
 deps:
     # FIXME: your dependency installation commands here
-    curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v25.6/protoc-25.6-linux-x86_64.zip
-    unzip protoc-25.6-linux-x86_64.zip -d protoc3
-    sudo mv protoc3/bin/* /usr/local/bin/
-    sudo mv protoc3/include/* /usr/local/include/
-    sudo chown $USER /usr/local/bin/protoc
-    sudo chown -R $USER /usr/local/include/google
-    rm protoc-25.6-linux-x86_64.zip
 
 # build your executables in release mode
 build:
     # FIXME: your build commands here (don't include clean)
-    cargo build -p kvstore -r
 
 # clean the build of your executables
 clean:
     # FIXME: your clean commands here
-    cargo clean
 
 # run your KV store server
 server listen="0.0.0.0:3777":
     # FIXME: your server run command here, listening on addr for new clients
-    -cargo run -p kvstore --bin server -r -- --listen-addr "{{listen}}"
 
 # run you KV store client in stdin/out interface mode
 client server="127.0.0.1:3777":
     # FIXME: your client run command here, connecting to server at addr
-    cargo run -p kvstore --bin client -r -- --server-addr "{{server}}"
 
 # run your KV store testcase 1 client
 test1 server="127.0.0.1:3777":
@@ -69,8 +58,6 @@ kill:
     #   TIP: commands such as 'pkill' may return non-zero exit code on success,
     #        which would by default abort the 'just' recipe early; prepend the
     #        command with a '-' sign to ignore its exit code
-    -sudo pkill -9 server > /dev/null 2>&1
-    -sudo pkill -9 client > /dev/null 2>&1
 
 # NOTE: feel free to add more recipes as you see fit...
 #       also feel free to add extra parameters to the recipes as you see fit,

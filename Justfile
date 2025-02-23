@@ -33,3 +33,6 @@ mod p1 'justmod/proj1.just'
 
 # project 2 recipes
 mod p2 'justmod/proj2.just'
+
+# project 3 recipes
+mod p3 'justmod/proj3.just'

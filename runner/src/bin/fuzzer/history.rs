@@ -202,7 +202,7 @@ impl History {
         ts_resp: u64,
         found: &bool,
     ) -> bool {
-        // println!(
+        // eprintln!(
         //     "--- PUT <{} - {}> {} {:?}",
         //     ts_call, ts_resp, found, key_spans
         // );
@@ -226,7 +226,7 @@ impl History {
         ts_resp: u64,
         old_value: Option<&String>,
     ) -> bool {
-        // println!(
+        // eprintln!(
         //     "--- SWAP <{} - {}> {:?} {:?}",
         //     ts_call, ts_resp, old_value, key_spans
         // );
@@ -250,7 +250,7 @@ impl History {
         ts_resp: u64,
         value: Option<&String>,
     ) -> bool {
-        // println!(
+        // eprintln!(
         //     "--- GET <{} - {}> {:?} {:?}",
         //     ts_call, ts_resp, value, key_spans
         // );
@@ -288,7 +288,7 @@ impl History {
             entries_map.insert(key, value);
         }
 
-        // println!("--- SCAN <{} - {}> loop", ts_call, ts_resp);
+        // eprintln!("--- SCAN <{} - {}> loop", ts_call, ts_resp);
         for (key, key_spans) in spans {
             // if key >= key_start && key <= key_end {
             //     println!("... {} {:?} {:?}", key, entries_map.get(key), key_spans);
@@ -310,7 +310,7 @@ impl History {
         ts_resp: u64,
         found: &bool,
     ) -> bool {
-        // println!(
+        // eprintln!(
         //     "--- DELETE <{} - {}> {} {:?}",
         //     ts_call, ts_resp, found, key_spans
         // );

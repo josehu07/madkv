@@ -101,9 +101,9 @@ fn fuzz_test(
             let call = gen_rand_kvcall(&keys[cidx], stats, cidx);
             call_memo[cidx] = (timestamp, call.update_info());
 
-            // println!("calling {:?} @ {}", call, timestamp);
+            // eprintln!("calling {:?} @ {}", call, timestamp);
             clients[cidx].send_call(call)?;
-            // println!("called");
+            // eprintln!("called");
 
             flying.set(cidx, true);
             ops_called += 1;
@@ -112,9 +112,9 @@ fn fuzz_test(
             let cidx = gen_rand_client(&flying, true);
 
             // RESP_TIMEOUT should be long enough to prevent false negatives
-            // println!("waiting");
+            // eprintln!("waiting");
             let resp = clients[cidx].wait_resp(RESP_TIMEOUT)?;
-            // println!("waited {:?} @ {}", resp, timestamp);
+            // eprintln!("waited {:?} @ {}", resp, timestamp);
             if let KvResp::Stop = resp {
                 cprintln!(
                     "<s><red>Unexpected stop response:</></>  client {}  <<{}>>",
