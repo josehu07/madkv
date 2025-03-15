@@ -13,6 +13,8 @@ Recommended project steps over a semester:
 3. Linearizable Replication w/ Consensus
 4. Open-ended project that extends the system
 
+## Prerequisites
+
 To get started, clone the repo to your development machines:
 
 ```bash
@@ -27,8 +29,6 @@ git pull
 git checkout proj
 git merge main
 ```
-
-## Prerequisites
 
 Install the following dependencies on all machines (instructions are for CloudLab instances running Ubuntu 22.04):
 
