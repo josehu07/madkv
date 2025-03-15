@@ -7,7 +7,8 @@ authors = ["Guanzhou Hu <me@josehu.com>"]
 
 [dependencies]
 rand = { workspace = true }
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.5", features = ["derive", "unstable-markdown"] }
 color-print = "0.3"
 bit-vec = "0.8"
 strum = { version = "0.26", features = ["derive"] }
+itertools = "0.14.0"
