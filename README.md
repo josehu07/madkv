@@ -13,6 +13,8 @@ Recommended project steps over a semester:
 3. Linearizable Replication w/ Consensus
 4. Open-ended project that extends the system
 
+See `sumgen/proj*-spec.pdf` for the project specs we have been using for the course.
+
 ## Prerequisites
 
 To get started, clone the repo to your development machines:
