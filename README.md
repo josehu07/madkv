@@ -87,6 +87,7 @@ The codebase contains the following essential files:
 * `refcli/`: a dummy client that demonstrates the stdin/out workloads interface
 * `runner/`: a multi-functional KV testing & benchmarking utility
 * `sumgen/`: helper scripts for plotting & report generation
+* `pmodel/`: consistency models written in P language (ignore for course projects)
 * `kvstore/` or any other directory name to your liking: source code of your KV store components
 
 Students will implement their KV store server, clients, and other components under some subdirectory (e.g., `kvstore/`) in any language/framework of their choice, and add proper invocation commands to project-specific Justfiles for automation. We recommend students get familiar with the basics of the [`just` tool](https://github.com/casey/just).

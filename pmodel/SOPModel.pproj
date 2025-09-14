@@ -1,0 +1,11 @@
+<!-- P Project file for the SOP model -->
+<Project>
+<ProjectName>SOPModel</ProjectName>
+<InputFiles>
+	<PFile>./PSrc/</PFile>
+	<PFile>./PForeign/</PFile>
+	<PFile>./PSpec/</PFile>
+	<PFile>./PTest/</PFile>
+</InputFiles>
+<OutputDir>./PGenerated/</OutputDir>
+</Project>

@@ -1,0 +1,4 @@
+PGenerated/
+PCheckerOutput/
+*.out
+*.err
