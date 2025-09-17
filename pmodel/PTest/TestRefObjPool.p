@@ -20,7 +20,7 @@ machine TestRefObjectPool
 
             SetupService();
             SetupClients();
-	    }
+        }
     }
 
     fun SetupService() {
@@ -28,7 +28,7 @@ machine TestRefObjectPool
         var ki: int;
 
         while (ki < numKeys) {
-            initPool += (ki, choose(numVals));
+            initPool += ( ki, choose(numVals) );
             ki = ki + 1;
         }
 
@@ -45,7 +45,7 @@ machine TestRefObjectPool
         numReqs = 1 + choose(5);  // each client issues between 1 to 5 requests
         
         while (ci < numClients) {
-            clients += (ci, new Client(
+            clients += ( ci, new Client(
                 (cId = ci, service = service, numReqs = numReqs, numKeys = numKeys, numVals = numVals)
             ));
             ci = ci + 1;
@@ -53,7 +53,7 @@ machine TestRefObjectPool
     }
 }
 
-// Declare the model checking test scenario -- with 1, 3, or 5 clients.
-test param (numClients in [1, 5]) CheckRefObjectPool [main=TestRefObjectPool]:
+// Declare the model checking test scenario -- with 1, or 5 clients.
+test param (numClients in [1, 5]) CheckRefObjectPoolImpl [main=TestRefObjectPool]:
     assert ServiceIsLinearizable in
     (union clientMod, serviceMod, { TestRefObjectPool });

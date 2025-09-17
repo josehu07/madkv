@@ -15,13 +15,13 @@ observes ServiceInitialPool, ClientSeesResponse
 {
     // record the linear history of operations and the state of the object pool
     // after each operation
-	var history: OrderingGraph;
+    var history: OrderingGraph;
     var nodeId: int;  // next node id to assign
 
     start state Init {
         on ServiceInitialPool goto WaitForResponses with (initialPool: map[int, int]) {
             // the history starts with a dummy response with the initial pool state
-            history.nodes += (nodeId,
+            history.nodes += ( nodeId,
                 (nId = nodeId,
                  cId = 0,
                  op = default(Operation),
@@ -30,7 +30,7 @@ observes ServiceInitialPool, ClientSeesResponse
                  pool = initialPool,
                  next = default(set[int]))
             );
-            
+
             history.head = nodeId;
             nodeId = nodeId + 1;
         }
@@ -39,7 +39,7 @@ observes ServiceInitialPool, ClientSeesResponse
     state WaitForResponses {
         on ClientSeesResponse do (resp: (op: Operation, cId: int, tsReq: int, tsResp: int)) {
             AppendResponse(resp);
-            assert SatisfiesLinearizability(history), "History is not linearizable";
+            AssertLinearizability(history);
 
             nodeId = nodeId + 1;
         }
@@ -53,7 +53,7 @@ observes ServiceInitialPool, ClientSeesResponse
         node.op = resp.op;
         node.tsReq = resp.tsReq;
         node.tsResp = resp.tsResp;
-        
+
         // since we expect a strictly linear, real-time history, must append
         // this node to the end of the linear history
         node.pool = ApplyOpToPool(resp.op, history.nodes[nodeId - 1].pool);
